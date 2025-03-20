@@ -3,7 +3,7 @@ import constants
 
 from managers.wave_manager import WaveManager
 from towers.elephant import Elephant
-from enemies.enemy import Enemy
+from towers.monkey import Monkey
 from utils.path import get_path_points
 from projectiles.projectile import Projectile
 
@@ -26,7 +26,6 @@ class GameplayScene:
         self.placing_tower_class = None         # 正在放置的塔類別
         self.placing_tower_image = None         # 其對應的圖片
         self.preview_angle = 0                  # 旋轉動畫所需
-        self.tower_cost = 100                   # 假設固定價格，亦可依照塔類別動態決定
 
     def spawn_projectile(self, tower_x, tower_y, enemy_x, enemy_y, tower):
         p = Projectile(tower_x, tower_y, enemy_x, enemy_y, tower)
@@ -34,13 +33,21 @@ class GameplayScene:
     
     def handle_events(self, event):
         if event.type == pygame.KEYDOWN:
+            # 洗掉放置塔的狀態
+            self.placing_tower_class = None
+            self.placing_tower_image = None
+            self.preview_angle = 0
+
             if event.key == pygame.K_ESCAPE:
                 self.scene_manager.switch_scene("menu")
 
-            # 按 1：開始放置 DartMonkey
             if event.key == pygame.K_1:
                 self.placing_tower_class = Elephant
                 self.placing_tower_image = Elephant.IMAGE
+            
+            if event.key == pygame.K_2:
+                self.placing_tower_class = Monkey
+                self.placing_tower_image = Monkey.IMAGE
 
             # 按 N 且前一波敵人已經全部消失，就開始下一波
             if event.key == pygame.K_n and not self.wave_manager.wave_in_progress and not self.wave_manager.all_waves_done:
@@ -48,13 +55,13 @@ class GameplayScene:
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             # 左鍵點擊：真正放置塔
-            if event.button == 1 and self.placing_tower_class:
+            if self.placing_tower_class:
                 x, y = event.pos
-                if self.money >= self.tower_cost:
+                if self.money >= self.placing_tower_class.PRICE:
+                    self.money -= self.placing_tower_class.PRICE
                     new_tower = self.placing_tower_class(x, y)
                     self.towers.append(new_tower)
-                    self.money -= self.tower_cost
-
+                    
                 self.placing_tower_class = None
                 self.placing_tower_image = None
                 self.preview_angle = 0

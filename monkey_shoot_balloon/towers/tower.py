@@ -3,6 +3,7 @@ import math
 
 class Tower:
     IMAGE = None
+    PRICE = 0
     def __init__(self, x, y, range_radius=100, damage=1, attack_speed=1.0):
         self.x = x
         self.y = y
