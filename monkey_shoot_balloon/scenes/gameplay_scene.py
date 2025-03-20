@@ -21,8 +21,6 @@ class GameplayScene:
         self.font = pygame.font.SysFont(None, 30)
         self.path_points = get_path_points()
 
-        # ---- 新增／修改 ----
-        # 用來記錄「目前正在準備放置」的塔類別、其預覽圖片，以及一個旋轉角度
         self.placing_tower_class = None         # 例如 DartMonkey
         self.placing_tower_image = None         # 其對應的圖片
         self.preview_angle = 0                  # 旋轉動畫所需
@@ -41,13 +39,13 @@ class GameplayScene:
                 self.placing_tower_class = DartMonkey
                 self.placing_tower_image = DartMonkey.IMAGE
 
-            # 按 N：下一波
-            if event.key == pygame.K_n:
+            # 按 N 且前一波敵人已經全部消失，就開始下一波
+            if event.key == pygame.K_n and not self.wave_manager.wave_in_progress and not self.wave_manager.all_waves_done:
                 self.wave_manager.next_wave()
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             # 左鍵點擊：真正放置塔
-            if event.button == 1 and self.placing_tower_class and self.placing_tower_image:
+            if event.button == 1 and self.placing_tower_class:
                 x, y = event.pos
                 # 如果錢足夠，就建立新塔
                 if self.money >= self.tower_cost:
@@ -72,11 +70,11 @@ class GameplayScene:
 
         self.wave_manager.update(dt, self.enemies)
 
-        # ---- 新增／修改 ----
-        # 如果正在放置塔，就讓預覽圖有個簡單的旋轉動畫
         if self.placing_tower_image:
-            # 例如每秒旋轉 90 度
             self.preview_angle += 90 * dt
+
+        if self.wave_manager.all_waves_done:
+            self.scene_manager.switch_scene("end")
 
     def draw(self, screen):
         """ 負責畫出當前場景的一切 """
@@ -98,8 +96,6 @@ class GameplayScene:
         screen.blit(money_text, (10, 40))
         screen.blit(info_text, (10, 70))
 
-        # ---- 新增／修改 ----
-        # 如果目前玩家正在放置某種塔，就在滑鼠位置顯示一個預覽
         if self.placing_tower_image:
             mx, my = pygame.mouse.get_pos()
             # 做一個旋轉

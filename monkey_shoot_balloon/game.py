@@ -10,7 +10,6 @@ class Game:
         pygame.display.set_caption("Monkey Shoot Balloon - Basic Demo")
         self.clock = pygame.time.Clock()
         self.running = True
-
         self.scene_manager = SceneManager()
 
     def run(self):

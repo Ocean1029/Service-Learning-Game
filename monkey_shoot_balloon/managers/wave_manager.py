@@ -2,6 +2,7 @@
 # managers/wave_manager.py
 import pygame
 from enemies.red_balloon import RedBalloon
+from enemies.blue_balloon import BlueBalloon
 
 class WaveManager:
     def __init__(self):
@@ -9,11 +10,12 @@ class WaveManager:
         self.spawn_timer = 0
         self.wave_in_progress = False
         self.enemies_to_spawn = 0
+        self.all_waves_done = False
 
         # 先用一個簡易清單定義每波敵人： (氣球類型, 數量)
         self.waves = [
             [(RedBalloon, 5)],
-            [(RedBalloon, 10)],
+            [(BlueBalloon, 5)]
         ]
 
     def start_wave(self, wave_index):
@@ -25,11 +27,12 @@ class WaveManager:
                 self.spawn_list += [balloon_class for _ in range(count)]
             self.wave_in_progress = True
             self.spawn_timer = 0
-        else:
-            self.wave_in_progress = False
+        
 
     def update(self, dt, enemies):
         if not self.wave_in_progress:
+            if(self.current_wave >= len(self.waves)-1):
+                self.all_waves_done = True
             return
 
         self.spawn_timer += dt
@@ -40,7 +43,6 @@ class WaveManager:
             enemies.append(new_balloon)
             self.spawn_timer = 0
 
-        # 如果清單空了且場上敵人都被清除，表示這波結束
         if not self.spawn_list and all(not e.alive for e in enemies):
             self.wave_in_progress = False
 

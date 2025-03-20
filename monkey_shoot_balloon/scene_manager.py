@@ -1,14 +1,17 @@
 # scene_manager.py
 from scenes.menu_scene import MenuScene
 from scenes.gameplay_scene import GameplayScene
+from scenes.end_scene import EndScene
 
 class SceneManager:
     def __init__(self):
         self.scenes = {}
         # 初始化並記錄各個場景
-        self.scenes["menu"] = MenuScene(self)
-        self.scenes["gameplay"] = GameplayScene(self)
-
+        self.scenes = {
+            "menu": MenuScene(self),
+            "gameplay": GameplayScene(self),
+            "end": EndScene(self),
+        }
         # 預設場景
         self.current_scene = self.scenes["menu"]
 
