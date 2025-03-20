@@ -1,5 +1,7 @@
 import math
 
+# try
+
 MAP_PATH_POINTS = [
     (50, 0),    # 起始：頂端靠左
     (50, 100),  # 往下
