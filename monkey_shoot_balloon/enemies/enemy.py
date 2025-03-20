@@ -4,9 +4,10 @@ from utils.path import get_path_points
 
 class Enemy:
     IMAGE = None
-    def __init__(self, health=1, speed=60):
+    def __init__(self, health=1, speed=60, reward=10):
         self.health = health
         self.speed = speed
+        self.reward = reward
 
         self.path = get_path_points()
         self.current_path_index = 0

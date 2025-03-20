@@ -11,8 +11,8 @@ class GameplayScene:
     def __init__(self, scene_manager):
         self.font = pygame.font.SysFont(None, 30)
         
-        self.money = 100000
-        self.life = 10
+        self.money = 300
+        self.life = 3
         self.enemies = []
         self.towers = []
         self.projectiles = []
@@ -23,7 +23,7 @@ class GameplayScene:
         
         self.path_points = get_path_points()
 
-        self.placing_tower_class = None         # 例如 DartMonkey
+        self.placing_tower_class = None         # 正在放置的塔類別
         self.placing_tower_image = None         # 其對應的圖片
         self.preview_angle = 0                  # 旋轉動畫所需
         self.tower_cost = 100                   # 假設固定價格，亦可依照塔類別動態決定
@@ -109,6 +109,8 @@ class GameplayScene:
                         # 命中
                         e.take_damage(p.damage)
                         p.hit()  # Projectile 自己標記死亡
+                    if not e.alive:
+                        self.money += e.reward
 
     def draw(self, screen):
         """ 負責畫出當前場景的一切 """
