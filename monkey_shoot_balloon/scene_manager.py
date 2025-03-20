@@ -1,7 +1,8 @@
 # scene_manager.py
 from scenes.menu_scene import MenuScene
 from scenes.gameplay_scene import GameplayScene
-from scenes.end_scene import EndScene
+from scenes.win_scene import WinScene
+from scenes.lose_scene import LoseScene
 
 class SceneManager:
     def __init__(self):
@@ -10,7 +11,8 @@ class SceneManager:
         self.scenes = {
             "menu": MenuScene(self),
             "gameplay": GameplayScene(self),
-            "end": EndScene(self),
+            "win": WinScene(self),
+            "lose": LoseScene(self)
         }
         # 預設場景
         self.current_scene = self.scenes["menu"]

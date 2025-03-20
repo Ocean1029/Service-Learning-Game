@@ -15,6 +15,8 @@ class Balloon:
         self.image = None # 給子類別實作
         self.rect = None # 給子類別實作
 
+        self.reached_end = False
+
     def update(self, dt):
         # 如果已死亡則不再更新
         if not self.alive:
@@ -46,7 +48,7 @@ class Balloon:
             else:
                 self.current_path_index += 1
         else:
-            # 走到終點，可以判定玩家失血或直接標記移除
+            self.reached_end = True
             self.alive = False
 
     def draw(self, screen):

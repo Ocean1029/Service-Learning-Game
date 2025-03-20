@@ -3,7 +3,7 @@
 import pygame
 import constants
 
-class EndScene:
+class LoseScene:
     def __init__(self, scene_manager):
         self.scene_manager = scene_manager
         self.font = pygame.font.SysFont(None, 48)
@@ -18,7 +18,7 @@ class EndScene:
 
     def draw(self, screen):
         screen.fill((150, 150, 150))
-        end_text = self.font.render("Congratulation!!!", True, constants.BLACK)
+        end_text = self.font.render("You lose!!!", True, constants.BLACK)
         info_text = self.font.render("Press any key to return to menu", True, constants.BLACK)
 
         screen.blit(
