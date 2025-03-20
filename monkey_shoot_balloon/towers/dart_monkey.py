@@ -6,7 +6,7 @@ class DartMonkey(Tower):
     IMAGE.fill((0, 255, 0))
         
     def __init__(self, x, y):
-        super().__init__(x, y, range_radius=120, damage=1, attack_speed=2.0)
+        super().__init__(x, y, range_radius=120, damage=1, attack_speed=1.0)
         # 先用正方形代替
         self.rect = self.IMAGE.get_rect(center=(x, y))
 
