@@ -17,6 +17,14 @@ class WaveManager:
             [(Tank1, 5)],
             [(Tank1, 5), (Tank2, 5)],
             [(Tank1, 10), (Tank2, 10)],
+            [(Tank1, 15), (Tank2, 15)],
+            [(Tank1, 20), (Tank2, 10)],
+            [(Tank2, 25)],
+            [(Tank1, 15), (Tank2, 20)],
+            [(Tank1, 25), (Tank2, 25)],
+            [(Tank1, 30), (Tank2, 30)],
+            [(Tank2, 40)],
+            [(Tank1, 50)]
         ]
 
     def start_wave(self, wave_index):
@@ -38,7 +46,7 @@ class WaveManager:
 
         self.spawn_timer += dt
         # 假設每 1 秒生成一隻敵人
-        if self.spawn_timer >= 1.0 and self.spawn_list:
+        if self.spawn_timer >= 0.5 and self.spawn_list:
             balloon_class = self.spawn_list.pop(0)
             new_balloon = balloon_class()
             enemies.append(new_balloon)

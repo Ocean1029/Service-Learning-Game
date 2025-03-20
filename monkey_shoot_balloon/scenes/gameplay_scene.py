@@ -12,7 +12,7 @@ class GameplayScene:
     def __init__(self, scene_manager):
         self.font = pygame.font.SysFont(None, 30)
         
-        self.money = 200
+        self.money = 300
         self.life = 3
         self.enemies = []
         self.towers = []
@@ -154,13 +154,12 @@ class GameplayScene:
 
         if self.placing_tower_class:
             mx, my = pygame.mouse.get_pos()
-
             rotated_image = pygame.transform.rotate(self.placing_tower_image, self.preview_angle)
-            
             # 旋轉 + 半透明
             if is_point_near_path(mx, my, self.path_points, MARGIN):
                 # 若近到不允許放置，就把透明度設為 20%
                 rotated_image.set_alpha(50)   # 50 / 255
+            
             else:
                 # 否則預設為 50% (或你想要的值)
                 rotated_image.set_alpha(128)
