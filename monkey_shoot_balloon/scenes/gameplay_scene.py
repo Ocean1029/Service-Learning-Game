@@ -4,14 +4,15 @@ import constants
 from managers.wave_manager import WaveManager
 from towers.elephant import Elephant
 from towers.monkey import Monkey
-from utils.path import get_path_points
+from utils.path import get_path_points, is_point_near_path
 from projectiles.projectile import Projectile
 
+MARGIN = 30
 class GameplayScene:
     def __init__(self, scene_manager):
         self.font = pygame.font.SysFont(None, 30)
         
-        self.money = 300
+        self.money = 200
         self.life = 3
         self.enemies = []
         self.towers = []
@@ -42,10 +43,15 @@ class GameplayScene:
                 self.scene_manager.switch_scene("menu")
 
             if event.key == pygame.K_1:
+                if self.money < Elephant.PRICE:
+                    return
+                
                 self.placing_tower_class = Elephant
                 self.placing_tower_image = Elephant.IMAGE
             
             if event.key == pygame.K_2:
+                if self.money < Monkey.PRICE:
+                    return
                 self.placing_tower_class = Monkey
                 self.placing_tower_image = Monkey.IMAGE
 
@@ -57,11 +63,14 @@ class GameplayScene:
             # 左鍵點擊：真正放置塔
             if self.placing_tower_class:
                 x, y = event.pos
-                if self.money >= self.placing_tower_class.PRICE:
-                    self.money -= self.placing_tower_class.PRICE
-                    new_tower = self.placing_tower_class(x, y)
-                    self.towers.append(new_tower)
-                    
+
+                if is_point_near_path(x, y, self.path_points, MARGIN):
+                    return
+                
+                self.money -= self.placing_tower_class.PRICE
+                new_tower = self.placing_tower_class(x, y)
+                self.towers.append(new_tower)
+                
                 self.placing_tower_class = None
                 self.placing_tower_image = None
                 self.preview_angle = 0
@@ -145,10 +154,16 @@ class GameplayScene:
 
         if self.placing_tower_class:
             mx, my = pygame.mouse.get_pos()
+
+            rotated_image = pygame.transform.rotate(self.placing_tower_image, self.preview_angle)
             
             # 旋轉 + 半透明
-            rotated_image = pygame.transform.rotate(self.placing_tower_image, self.preview_angle)
-            rotated_image.set_alpha(150)
+            if is_point_near_path(mx, my, self.path_points, MARGIN):
+                # 若近到不允許放置，就把透明度設為 20%
+                rotated_image.set_alpha(50)   # 50 / 255
+            else:
+                # 否則預設為 50% (或你想要的值)
+                rotated_image.set_alpha(128)
 
             # 將旋轉後的圖片置中在滑鼠座標
             preview_rect = rotated_image.get_rect(center=(mx, my))
