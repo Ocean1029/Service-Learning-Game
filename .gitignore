@@ -1,5 +1,7 @@
-# pycache
+# any path including pycache
 __pycache__/
+# any path including pyc
+*.pyc
 # virtualenv
 venv/
 # DS_Store
