@@ -5,6 +5,7 @@ from managers.wave_manager import WaveManager
 from towers.dart_monkey import DartMonkey
 from enemies.balloon import Balloon
 from utils.path import get_path_points
+from projectiles.projectile import Projectile
 
 class GameplayScene:
     def __init__(self, scene_manager):
@@ -14,6 +15,7 @@ class GameplayScene:
         self.life = 10
         self.enemies = []
         self.towers = []
+        self.projectiles = []
         
         self.scene_manager = scene_manager
         self.wave_manager = WaveManager()
@@ -26,6 +28,10 @@ class GameplayScene:
         self.preview_angle = 0                  # 旋轉動畫所需
         self.tower_cost = 100                   # 假設固定價格，亦可依照塔類別動態決定
 
+    def spawn_projectile(self, tower_x, tower_y, enemy_x, enemy_y, tower):
+        p = Projectile(tower_x, tower_y, enemy_x, enemy_y, tower)
+        self.projectiles.append(p)
+    
     def handle_events(self, event):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
@@ -63,24 +69,45 @@ class GameplayScene:
                 self.life -= 1
         self.enemies = [e for e in self.enemies if e.alive]
 
+        # update projectiles
+        for p in self.projectiles:
+            p.update(dt)
+        self.check_projectile_collisions()
+        self.projectiles = [p for p in self.projectiles if p.alive]
+
         # update towers
         for t in self.towers:
             t.update(dt, self.enemies)
+            if t.target_enemy: # 如果在更新後，冷卻完畢且有母標，就產生飛行物朝向敵人
+                self.spawn_projectile(t.x, t.y, t.target_enemy.x, t.target_enemy.y, t)
 
         # update wave manager
         self.wave_manager.update(dt, self.enemies)
 
+
         # 如果正在放置塔，則讓塔圖片旋轉
         if self.placing_tower_class:
             self.preview_angle += 90 * dt
-
-        # 檢查是否遊戲結束
 
         if self.life <= 0:
             self.scene_manager.switch_scene("lose")
 
         if self.wave_manager.all_waves_done:
             self.scene_manager.switch_scene("win")
+
+    def check_projectile_collisions(self):
+        """ 檢查飛行物與敵人之間的碰撞 """
+        for p in self.projectiles:
+            if not p.alive:
+                continue
+            # 可用 bounding circle, 或 rect.colliderect
+            for e in self.enemies:
+                if e.alive and p.alive:
+                    # 簡單示範：用 rect 碰撞檢查
+                    if p.rect.colliderect(e.rect):
+                        # 命中
+                        e.take_damage(p.damage)
+                        p.hit()  # Projectile 自己標記死亡
 
     def draw(self, screen):
         """ 負責畫出當前場景的一切 """
@@ -92,6 +119,9 @@ class GameplayScene:
             e.draw(screen)
         for t in self.towers:
             t.draw(screen)
+        for p in self.projectiles:
+            p.draw(screen)
+
 
         wave_text = self.font.render(f"Waves: {self.wave_manager.current_wave + 1}", True, constants.BLACK)
         money_text = self.font.render(f"Money: {self.money}", True, constants.BLACK)

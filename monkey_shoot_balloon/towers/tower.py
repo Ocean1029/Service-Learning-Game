@@ -6,24 +6,24 @@ class Tower:
     def __init__(self, x, y, range_radius=100, damage=1, attack_speed=1.0):
         self.x = x
         self.y = y
+        
         self.range_radius = range_radius  # 攻擊範圍
         self.damage = damage
         self.attack_speed = attack_speed  # 每秒可攻擊一次，可自由調整邏輯
 
         self.cooldown = 0 
         self.rect = None
+        self.target_enemy = None
 
     def update(self, dt, enemies):
-        # cooldown 管理
         if self.cooldown > 0:
             self.cooldown -= dt
-        
-        # 如果可以攻擊，就嘗試對範圍內的敵人造成傷害
+
         if self.cooldown <= 0:
-            target = self.find_target_in_range(enemies)
-            if target:
-                self.attack(target)
-                # 攻擊完之後重置冷卻
+            self.target_enemy = self.find_target_in_range(enemies)
+            if self.target_enemy is None:
+                return 
+            else:
                 self.cooldown = 1.0 / self.attack_speed
 
     def find_target_in_range(self, enemies):
