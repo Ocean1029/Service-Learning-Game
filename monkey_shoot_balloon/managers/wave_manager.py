@@ -2,7 +2,7 @@
 # managers/wave_manager.py
 import pygame
 from enemies.tank_1 import Tank1
-from enemies.tank2 import Tank2
+from enemies.tank_2 import Tank2
 
 class WaveManager:
     def __init__(self):
