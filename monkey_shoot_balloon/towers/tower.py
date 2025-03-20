@@ -7,9 +7,9 @@ class Tower:
         self.x = x
         self.y = y
         
-        self.range_radius = range_radius  # 攻擊範圍
+        self.range_radius = range_radius
         self.damage = damage
-        self.attack_speed = attack_speed  # 每秒可攻擊一次，可自由調整邏輯
+        self.attack_speed = attack_speed 
 
         self.cooldown = 0 
         self.rect = None

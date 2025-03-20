@@ -80,6 +80,7 @@ class GameplayScene:
             t.update(dt, self.enemies)
             if t.target_enemy: # 如果在更新後，冷卻完畢且有母標，就產生飛行物朝向敵人
                 self.spawn_projectile(t.x, t.y, t.target_enemy.x, t.target_enemy.y, t)
+                t.target_enemy = None
 
         # update wave manager
         self.wave_manager.update(dt, self.enemies)
