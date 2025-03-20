@@ -15,7 +15,8 @@ class WaveManager:
         # 先用一個簡易清單定義每波敵人： (氣球類型, 數量)
         self.waves = [
             [(Tank1, 5)],
-            [(Tank2, 5)]
+            [(Tank1, 5), (Tank2, 5)],
+            [(Tank1, 10), (Tank2, 10)],
         ]
 
     def start_wave(self, wave_index):
