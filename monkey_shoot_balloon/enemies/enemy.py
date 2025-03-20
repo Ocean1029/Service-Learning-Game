@@ -2,7 +2,8 @@
 import pygame
 from utils.path import get_path_points
 
-class Balloon:
+class Enemy:
+    IMAGE = None
     def __init__(self, health=1, speed=60):
         self.health = health
         self.speed = speed
@@ -12,7 +13,6 @@ class Balloon:
         self.x, self.y = self.path[0]
 
         self.alive = True
-        self.image = None # 給子類別實作
         self.rect = None # 給子類別實作
 
         self.reached_end = False
@@ -52,8 +52,8 @@ class Balloon:
             self.alive = False
 
     def draw(self, screen):
-        if self.alive and self.image and self.rect:
-            screen.blit(self.image, self.rect)
+        if self.alive and self.IMAGE and self.rect:
+            screen.blit(self.IMAGE, self.rect)
 
     def take_damage(self, dmg):
         self.health -= dmg

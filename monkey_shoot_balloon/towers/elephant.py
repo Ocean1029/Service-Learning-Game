@@ -1,9 +1,10 @@
 from .tower import Tower
 import pygame
 
-class DartMonkey(Tower):
-    IMAGE = pygame.Surface((30, 30))
-    IMAGE.fill((0, 255, 0))
+class Elephant(Tower):
+    IMAGE = pygame.image.load("assets/images/tower/elephant.png")
+    # resize
+    IMAGE = pygame.transform.scale(IMAGE, (40, 40))
         
     def __init__(self, x, y):
         super().__init__(x, y, range_radius=120, damage=1, attack_speed=1.0)

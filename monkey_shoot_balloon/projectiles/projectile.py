@@ -2,7 +2,6 @@ import pygame
 import math
 
 class Projectile:
-    # image 先用圓形代替
     IMAGE = pygame.Surface((10, 10))
     IMAGE.fill((50,50,50))
 

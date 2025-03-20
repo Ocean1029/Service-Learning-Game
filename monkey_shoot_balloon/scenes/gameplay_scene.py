@@ -2,8 +2,8 @@ import pygame
 import constants
 
 from managers.wave_manager import WaveManager
-from towers.dart_monkey import DartMonkey
-from enemies.balloon import Balloon
+from towers.elephant import Elephant
+from enemies.enemy import Enemy
 from utils.path import get_path_points
 from projectiles.projectile import Projectile
 
@@ -39,8 +39,8 @@ class GameplayScene:
 
             # 按 1：開始放置 DartMonkey
             if event.key == pygame.K_1:
-                self.placing_tower_class = DartMonkey
-                self.placing_tower_image = DartMonkey.IMAGE
+                self.placing_tower_class = Elephant
+                self.placing_tower_image = Elephant.IMAGE
 
             # 按 N 且前一波敵人已經全部消失，就開始下一波
             if event.key == pygame.K_n and not self.wave_manager.wave_in_progress and not self.wave_manager.all_waves_done:
@@ -126,7 +126,7 @@ class GameplayScene:
         wave_text = self.font.render(f"Waves: {self.wave_manager.current_wave + 1}", True, constants.BLACK)
         money_text = self.font.render(f"Money: {self.money}", True, constants.BLACK)
         life_text = self.font.render(f"Life: {self.life}", True, constants.BLACK)
-        info_text = self.font.render("[1] Place DartMonkey   [N] Next Round [ESC] Back", True, constants.BLACK)
+        info_text = self.font.render("[1] Place Elephant [N] Next Round [ESC] Back", True, constants.BLACK)
 
         screen.blit(wave_text, (300, 10))
         screen.blit(money_text, (300, 40))
