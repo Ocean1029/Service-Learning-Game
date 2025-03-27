@@ -33,3 +33,4 @@ class Game:
     def draw(self):
         self.scene_manager.draw(self.screen)
         pygame.display.flip()
+# jjiji
