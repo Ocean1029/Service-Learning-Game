@@ -7,13 +7,13 @@ from towers.monkey import Monkey
 from utils.path import get_path_points, is_point_near_path
 from projectiles.projectile import Projectile
 
-MARGIN = 30
+
 class GameplayScene:
     def __init__(self, scene_manager):
         self.font = pygame.font.SysFont(None, 30)
         
-        self.money = 300
-        self.life = 3
+        self.money = constants.INITIAL_MONEY
+        self.life = constants.INITIAL_LIVES
         self.enemies = []
         self.towers = []
         self.projectiles = []
@@ -64,7 +64,7 @@ class GameplayScene:
             if self.placing_tower_class:
                 x, y = event.pos
 
-                if is_point_near_path(x, y, self.path_points, MARGIN):
+                if is_point_near_path(x, y, self.path_points, constants.MARGIN):
                     return
                 
                 self.money -= self.placing_tower_class.PRICE
@@ -156,7 +156,7 @@ class GameplayScene:
             mx, my = pygame.mouse.get_pos()
             rotated_image = pygame.transform.rotate(self.placing_tower_image, self.preview_angle)
             # 旋轉 + 半透明
-            if is_point_near_path(mx, my, self.path_points, MARGIN):
+            if is_point_near_path(mx, my, self.path_points, constants.MARGIN):
                 # 若近到不允許放置，就把透明度設為 20%
                 rotated_image.set_alpha(50)   # 50 / 255
             

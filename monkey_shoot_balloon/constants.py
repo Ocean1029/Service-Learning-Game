@@ -8,3 +8,8 @@ FPS = 60
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (200, 200, 200)
+
+# 初始狀態
+INITIAL_MONEY = 300
+INITIAL_LIVES = 3
+MARGIN = 30 # 路徑邊界的距離
