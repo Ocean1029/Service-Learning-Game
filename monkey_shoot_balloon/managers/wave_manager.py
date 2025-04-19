@@ -12,19 +12,19 @@ class WaveManager:
         self.enemies_to_spawn = 0
         self.all_waves_done = False
 
-        # 先用一個簡易清單定義每波敵人： (氣球類型, 數量)
+        # 用定義每波敵人：[敵人類型, 數量)
         self.waves = [
-            [(Tank1, 5)],
-            [(Tank1, 5), (Tank2, 5)],
-            [(Tank1, 10), (Tank2, 10)],
-            [(Tank1, 15), (Tank2, 15)],
-            [(Tank1, 20), (Tank2, 10)],
-            [(Tank2, 25)],
-            [(Tank1, 15), (Tank2, 20)],
-            [(Tank1, 25), (Tank2, 25)],
-            [(Tank1, 30), (Tank2, 30)],
-            [(Tank2, 40)],
-            [(Tank1, 50)]
+            [[Tank1, 5]],
+            [[Tank1, 5],[Tank2, 5]],
+            [[Tank1, 10],[Tank2, 10]],
+            [[Tank1, 15],[Tank2, 15]],
+            [[Tank1, 20],[Tank2, 10]],
+            [[Tank2, 25]],
+            [[Tank1, 15],[Tank2, 20]],
+            [[Tank1, 25],[Tank2, 25]],
+            [[Tank1, 30],[Tank2, 30]],
+            [[Tank2, 40]],
+            [[Tank1, 50]]
         ]
 
     def start_wave(self, wave_index):
