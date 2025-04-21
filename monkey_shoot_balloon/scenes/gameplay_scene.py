@@ -4,6 +4,7 @@ import constants
 from managers.wave_manager import WaveManager
 from towers.elephant import Elephant
 from towers.monkey import Monkey
+from towers.giraffe import Giraffe
 from utils.path import get_path_points, is_point_near_path
 from projectiles.projectile import Projectile
 import os
@@ -68,6 +69,12 @@ class GameplayScene:
                     return
                 self.placing_tower_class = Monkey
                 self.placing_tower_image = Monkey.IMAGE
+                
+            if event.key == pygame.K_3:
+                if self.money < Giraffe.PRICE:
+                    return
+                self.placing_tower_class = Giraffe
+                self.placing_tower_image = Giraffe.IMAGE
 
             # 按 N 且前一波敵人已經全部消失，就開始下一波
             if event.key == pygame.K_n and not self.wave_manager.wave_in_progress and not self.wave_manager.all_waves_done:
