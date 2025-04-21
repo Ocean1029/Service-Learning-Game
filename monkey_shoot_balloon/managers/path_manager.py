@@ -1,5 +1,5 @@
 # path_manager.py
-import random, math, constants
+import random, constants
 
 class PathManager:
     def __init__(self):

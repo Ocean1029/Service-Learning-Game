@@ -168,12 +168,27 @@ class GameplayScene:
 
     def draw_background(self, screen):
         
-        screen.fill((150, 150, 150))
+        top_color = (180, 220, 180)
+        bottom_color = (100, 160, 100)
+        height = constants.SCREEN_HEIGHT
+
+        for y in range(height):
+            ratio = y / height
+            r = int(top_color[0] * (1 - ratio) + bottom_color[0] * ratio)
+            g = int(top_color[1] * (1 - ratio) + bottom_color[1] * ratio)
+            b = int(top_color[2] * (1 - ratio) + bottom_color[2] * ratio)
+            pygame.draw.line(screen, (r, g, b), (0, y), (constants.SCREEN_WIDTH, y))
 
         # 畫路徑
-        if len(self.path_points) > 1:
-            pygame.draw.lines(screen, (0, 128, 0), False, self.path_points, 5)
-
+        if len(self.path_points) < 2:
+            return
+        # 陰影底線
+        pygame.draw.lines(screen, (0, 100, 0), False, self.path_points, 20)
+        # 道路主體（亮一點）
+        pygame.draw.lines(screen, (34, 139, 34), False, self.path_points, 14)
+        # 中線
+        pygame.draw.lines(screen, (255, 255, 255), False, self.path_points, 2)
+        
         # 在路徑的尾端放上 wood cabin 圖片
         if self.path_points:
             cabin_image = pygame.image.load(constants.PATH_END_IMAGE).convert_alpha()

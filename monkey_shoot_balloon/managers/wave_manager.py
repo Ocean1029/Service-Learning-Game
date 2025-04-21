@@ -1,6 +1,5 @@
 
 # managers/wave_manager.py
-import pygame
 from enemies.tank_1 import Tank1
 from enemies.tank_2 import Tank2
 import constants
@@ -19,6 +18,7 @@ class WaveManager:
             [],
             [[Tank1, 5]],
             [[Tank1, 5], [Tank2, 5]],
+            [[Tank1, 5], [Tank2, 5], [Tank1, 5]],
         ]
 
         self.wave_interval     = 4.0    # 波與波的間隔秒數
