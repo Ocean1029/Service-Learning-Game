@@ -34,13 +34,13 @@ class GameplayScene:
         self.icon_heart = pygame.image.load(os.path.join(UI_PATH, "heart.png")).convert_alpha()
         self.icon_wave  = pygame.image.load(os.path.join(UI_PATH, "flag.png")).convert_alpha()
 
-        size = (24, 24)
+        size = (48, 48)
         self.icon_coin  = pygame.transform.smoothscale(self.icon_coin,  size)
         self.icon_heart = pygame.transform.smoothscale(self.icon_heart, size)
         self.icon_wave  = pygame.transform.smoothscale(self.icon_wave,  size)
 
         # 數字字體 (可用系統字或自訂字體)
-        self.ui_font = pygame.font.Font(None, 26) 
+        self.ui_font = pygame.font.Font(None, 48) 
         
 
     def spawn_projectile(self, tower_x, tower_y, enemy_x, enemy_y, tower):
@@ -150,27 +150,13 @@ class GameplayScene:
                         self.money += e.reward
 
     def draw(self, screen):
-        """ 負責畫出當前場景的一切 """
-        
-        # 畫背景
-        self.draw_background(screen)
-
-        for e in self.enemies:
-            e.draw(screen)
-        for t in self.towers:
-            t.draw(screen)
-        for p in self.projectiles:
-            p.draw(screen)
-
-        # 畫 UI
-        self.draw_ui(screen)
-        self.draw_interval_ui(screen)
-
-        # 畫放置中的塔
-        self.draw_placing_tower(screen)
+        self.draw_background(screen) # 畫背景
+        self.draw_objects(screen) # 畫所有物件
+        self.draw_ui(screen) # 畫 UI
+        self.draw_interval_ui(screen) # 畫波次間隔條
+        self.draw_placing_tower(screen) # 畫放置中的塔
         
         pygame.display.flip()
-
 
     def draw_background(self, screen):
         
@@ -180,6 +166,14 @@ class GameplayScene:
         if len(self.path_points) > 1:
             pygame.draw.lines(screen, (0, 128, 0), False, self.path_points, 5)
         
+    def draw_objects(self, screen):
+        for e in self.enemies:
+            e.draw(screen)
+        for t in self.towers:
+            t.draw(screen)
+        for p in self.projectiles:
+            p.draw(screen)
+
 
     def draw_interval_ui(self, screen):
         """波次間隔倒數條 + 文字"""
@@ -212,22 +206,22 @@ class GameplayScene:
 
 
     def draw_ui(self, screen):
-        icon_pos_x = 700
+        icon_pos_x = 600
 
         # -------- 金錢 --------
-        screen.blit(self.icon_coin, (icon_pos_x, 12))
+        screen.blit(self.icon_coin, (icon_pos_x, 20))
         money_txt = self.ui_font.render(str(self.money), True, constants.BLACK)
-        screen.blit(money_txt, (icon_pos_x + 28, 12))       # 圖示右側 4px
+        screen.blit(money_txt, (icon_pos_x + 60, 20))       # 圖示右側 4px
 
         # -------- 生命 --------
-        screen.blit(self.icon_heart, (icon_pos_x, 48))
+        screen.blit(self.icon_heart, (icon_pos_x, 80))
         life_txt = self.ui_font.render(str(self.life), True, constants.BLACK)
-        screen.blit(life_txt, (icon_pos_x + 28, 48))
+        screen.blit(life_txt, (icon_pos_x + 60, 80))
 
         # -------- 波次 --------
-        screen.blit(self.icon_wave, (icon_pos_x, 84))
+        screen.blit(self.icon_wave, (icon_pos_x, 140))
         wave_txt = self.ui_font.render(str(self.wave_manager.current_wave + 1), True, constants.BLACK)
-        screen.blit(wave_txt, (icon_pos_x + 28, 84))
+        screen.blit(wave_txt, (icon_pos_x + 60, 140))
 
     def draw_placing_tower(self, screen):
         if self.placing_tower_class:
@@ -235,8 +229,8 @@ class GameplayScene:
             rotated_image = pygame.transform.rotate(self.placing_tower_image, self.preview_angle)
             # 旋轉 + 半透明
             if is_point_near_path(mx, my, self.path_points, constants.MARGIN):
-                # 若近到不允許放置，就把透明度設為 20%
-                rotated_image.set_alpha(50)   # 50 / 255
+                # 若近到不允許放置，就把透明度設為 25%
+                rotated_image.set_alpha(70)   # 70 / 255
             
             else:
                 # 否則預設為 50% (或你想要的值)
