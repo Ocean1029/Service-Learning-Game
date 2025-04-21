@@ -5,6 +5,7 @@ import random
 from managers.wave_manager import WaveManager
 from managers.path_manager import PathManager
 from decors.decor import Decor
+from UI.UI_button import UIButton
 from towers.elephant import Elephant
 from towers.monkey import Monkey
 from towers.giraffe import Giraffe
@@ -54,11 +55,31 @@ class GameplayScene:
         self.decor_images = self.load_decor_images()
         self.decorations = self.generate_decorations(10) 
 
+        self.tower_buttons = []
+
+        tower_classes = [Elephant, Monkey, Giraffe]
+        start_x = 40
+        for i, tower_cls in enumerate(tower_classes):
+            btn = UIButton(
+                x=start_x + i*140,
+                y=constants.SCREEN_HEIGHT - 70,
+                width=120,
+                height=60,
+                tower_cls=tower_cls,
+                font=self.ui_font,
+                on_click=self.select_tower
+            )
+            self.tower_buttons.append(btn)
+
     def spawn_projectile(self, tower_x, tower_y, enemy_x, enemy_y, tower):
         p = Projectile(tower_x, tower_y, enemy_x, enemy_y, tower)
         self.projectiles.append(p)
     
     def handle_events(self, event):
+
+        for btn in self.tower_buttons:
+            btn.handle_event(event, self.money)
+
         if event.type == pygame.KEYDOWN:
             # 洗掉放置塔的狀態
             self.placing_tower_class = None
@@ -67,7 +88,7 @@ class GameplayScene:
 
             if event.key == pygame.K_ESCAPE:
                 self.scene_manager.switch_scene("menu")
-
+            
             if event.key == pygame.K_1:
                 if self.money < Elephant.PRICE:
                     return
@@ -96,6 +117,10 @@ class GameplayScene:
             if self.placing_tower_class:
                 x, y = event.pos
                 
+                for btn in self.tower_buttons:
+                    if btn.rect.collidepoint(event.pos):
+                        return  # ⛔ 點在 UI 上，不能放塔！
+
                 if not self.can_place_tower(x, y, self.placing_tower_class):
                     return       
                 
@@ -247,6 +272,9 @@ class GameplayScene:
     def draw_ui(self, screen):
         icon_pos_x = 600
 
+        for btn in self.tower_buttons:
+            btn.draw(screen, self.money)
+
         # -------- 金錢 --------
         screen.blit(self.icon_coin, (icon_pos_x, 20))
         money_txt = self.ui_font.render(str(self.money), True, constants.BLACK)
@@ -263,10 +291,20 @@ class GameplayScene:
         screen.blit(wave_txt, (icon_pos_x + 60, 140))
 
     def draw_placing_tower(self, screen):
-        if self.placing_tower_class:
+        if self.placing_tower_class: # 如果正在放置塔，class 不為 None 則繼續判斷
+            range_radius = self.placing_tower_class(0,0).range_radius
+            circle_color = (0, 180, 255, 80)  # 淡藍半透明
+
             mx, my = pygame.mouse.get_pos()
             rotated_image = pygame.transform.rotate(self.placing_tower_image, self.preview_angle)
             # 旋轉 + 半透明
+
+            circle_surface = pygame.Surface(
+            (range_radius*2, range_radius*2), pygame.SRCALPHA)
+            pygame.draw.circle(
+                circle_surface, circle_color, (range_radius, range_radius), range_radius)
+            screen.blit(circle_surface, (mx - range_radius, my - range_radius))
+
             if not self.can_place_tower(mx, my, self.placing_tower_class):
                 # 若近到不允許放置，就把透明度設為 20%
                 rotated_image.set_alpha(50)   # 50 / 255
@@ -328,3 +366,8 @@ class GameplayScene:
             
             decorations.append(Decor(image, x, y))
         return decorations
+
+    def select_tower(self, tower_cls):
+        self.placing_tower_class = tower_cls
+        self.placing_tower_image = tower_cls.IMAGE
+        self.preview_angle = 0

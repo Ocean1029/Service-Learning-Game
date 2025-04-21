@@ -10,6 +10,7 @@ FPS = 60
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (200, 200, 200)
+GREEN = (0, 128, 0)
 
 # 初始狀態
 INITIAL_MONEY = 300
