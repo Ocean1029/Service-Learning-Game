@@ -6,6 +6,7 @@ from towers.elephant import Elephant
 from towers.monkey import Monkey
 from utils.path import get_path_points, is_point_near_path
 from projectiles.projectile import Projectile
+import os
 
 
 class GameplayScene:
@@ -27,6 +28,21 @@ class GameplayScene:
         self.placing_tower_class = None         # 正在放置的塔類別
         self.placing_tower_image = None         # 其對應的圖片
         self.preview_angle = 0                  # 旋轉動畫所需
+
+        UI_PATH = "assets/images/UI"
+
+        self.icon_coin  = pygame.image.load(os.path.join(UI_PATH, "coin.png")).convert_alpha()
+        self.icon_heart = pygame.image.load(os.path.join(UI_PATH, "heart.png")).convert_alpha()
+        self.icon_wave  = pygame.image.load(os.path.join(UI_PATH, "flag.png")).convert_alpha()
+
+        size = (24, 24)
+        self.icon_coin  = pygame.transform.smoothscale(self.icon_coin,  size)
+        self.icon_heart = pygame.transform.smoothscale(self.icon_heart, size)
+        self.icon_wave  = pygame.transform.smoothscale(self.icon_wave,  size)
+
+        # 數字字體 (可用系統字或自訂字體)
+        self.ui_font = pygame.font.Font(None, 26) 
+        
 
     def spawn_projectile(self, tower_x, tower_y, enemy_x, enemy_y, tower):
         p = Projectile(tower_x, tower_y, enemy_x, enemy_y, tower)
@@ -141,16 +157,21 @@ class GameplayScene:
         for p in self.projectiles:
             p.draw(screen)
 
+        icon_pos_x = 700
+        # -------- 金錢 --------
+        screen.blit(self.icon_coin, (icon_pos_x, 12))
+        money_txt = self.ui_font.render(str(self.money), True, constants.BLACK)
+        screen.blit(money_txt, (icon_pos_x + 28, 12))       # 圖示右側 4px
 
-        wave_text = self.font.render(f"Waves: {self.wave_manager.current_wave + 1}", True, constants.BLACK)
-        money_text = self.font.render(f"Money: {self.money}", True, constants.BLACK)
-        life_text = self.font.render(f"Life: {self.life}", True, constants.BLACK)
-        info_text = self.font.render("[1] Place Elephant [N] Next Round [ESC] Back", True, constants.BLACK)
+        # -------- 生命 --------
+        screen.blit(self.icon_heart, (icon_pos_x, 48))
+        life_txt = self.ui_font.render(str(self.life), True, constants.BLACK)
+        screen.blit(life_txt, (icon_pos_x + 28, 48))
 
-        screen.blit(wave_text, (300, 10))
-        screen.blit(money_text, (300, 40))
-        screen.blit(life_text, (300, 70))
-        screen.blit(info_text, (300, 100))
+        # -------- 波次 --------
+        screen.blit(self.icon_wave, (icon_pos_x, 84))
+        wave_txt = self.ui_font.render(str(self.wave_manager.current_wave + 1), True, constants.BLACK)
+        screen.blit(wave_txt, (icon_pos_x + 28, 84))
 
         if self.placing_tower_class:
             mx, my = pygame.mouse.get_pos()
