@@ -15,8 +15,9 @@ class WaveManager:
 
         # 用定義每波敵人：[敵人類型, 數量)
         self.waves = [
-            [[Tank1, 1]],
-            [[Tank1, 1], [Tank2, 1]],
+            [[Tank1, 5]],
+            [[Tank1, 5], [Tank2, 5]],
+            
         ]
 
     def start_wave(self, wave_index):

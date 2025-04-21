@@ -1,4 +1,5 @@
 import math
+import random
 
 # try
 
@@ -17,10 +18,73 @@ MAP_PATH_POINTS = [
     [700, 500]  # 末端：靠近螢幕下方
 ]
 
-def get_path_points():
-    """ 回傳地圖的路徑座標點清單 """
-    return MAP_PATH_POINTS
+# Store the generated path to reuse during a single game session
+current_path = None
 
+def generate_random_path():
+    """Generate a random path for enemies to follow"""
+    screen_width = 800
+    screen_height = 600
+    
+    # Start position is always at the top of the screen
+    start_x = random.randint(30, 150)
+    path = [[start_x, 0]]
+    
+    # Number of waypoints (between 7 and 12)
+    num_points = random.randint(7, 12)
+    
+    current_x, current_y = start_x, 0
+    
+    # Generate waypoints
+    for i in range(num_points):
+        # Decide direction: horizontal or vertical movement
+        if i % 2 == 0:  # Even indices: move vertically
+            # Don't go beyond the bottom of the screen
+            max_y = min(current_y + 200, screen_height - 50)
+            new_y = random.randint(current_y + 50, max_y)
+            path.append([current_x, new_y])
+            current_y = new_y
+        else:  # Odd indices: move horizontally
+            # Choose left or right movement, but ensure we stay within bounds
+            if current_x < screen_width / 2:
+                # More likely to move right if in left half
+                direction = random.choices([-1, 1], weights=[30, 70])[0]
+            else:
+                # More likely to move left if in right half
+                direction = random.choices([-1, 1], weights=[70, 30])[0]
+            
+            distance = random.randint(80, 250)
+            
+            # Make sure we stay within screen bounds
+            if direction == 1:  # moving right
+                new_x = min(current_x + distance, screen_width - 30)
+            else:  # moving left
+                new_x = max(current_x - distance, 30)
+            
+            path.append([new_x, current_y])
+            current_x = new_x
+    
+    # Ensure the path ends at the bottom of the screen
+    # If the last movement was horizontal, add a final vertical movement
+    if path[-1][1] < screen_height - 50:
+        path.append([path[-1][0], screen_height])
+    
+    return path
+
+def get_path_points():
+    """ Return path coordinates - randomly generated the first time it's called """
+    global current_path
+    
+    # If no path has been generated yet or we want a new path each game
+    if current_path is None:
+        current_path = generate_random_path()
+    
+    return current_path
+
+def reset_path():
+    """Reset the current path to force generation of a new one"""
+    global current_path
+    current_path = None
 
 def point_to_segment_distance(px, py, x1, y1, x2, y2):
     """

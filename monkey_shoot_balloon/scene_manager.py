@@ -3,6 +3,7 @@ from scenes.menu_scene import MenuScene
 from scenes.gameplay_scene import GameplayScene
 from scenes.win_scene import WinScene
 from scenes.lose_scene import LoseScene
+from utils.path import reset_path
 
 class SceneManager:
     def __init__(self):
@@ -32,5 +33,7 @@ class SceneManager:
 
     def reset_gameplay(self):
         """建立一個『全新的』GameplayScene，覆蓋舊的"""
+        # Reset the path before creating a new gameplay scene
+        reset_path()
         self.scenes["gameplay"] = GameplayScene(self)
 
