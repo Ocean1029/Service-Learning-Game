@@ -41,7 +41,14 @@ def generate_random_path():
         if i % 2 == 0:  # Even indices: move vertically
             # Don't go beyond the bottom of the screen
             max_y = min(current_y + 200, screen_height - 50)
-            new_y = random.randint(current_y + 50, max_y)
+            
+            # Check if we have a valid range for random selection
+            if current_y + 50 >= max_y:
+                # If no valid range, just move to the maximum allowed position
+                new_y = max_y
+            else:
+                new_y = random.randint(current_y + 50, max_y)
+                
             path.append([current_x, new_y])
             current_y = new_y
         else:  # Odd indices: move horizontally

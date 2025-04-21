@@ -32,7 +32,7 @@ class SceneManager:
             self.current_scene = self.scenes[scene_name]
 
     def reset_gameplay(self):
-        """建立一個『全新的』GameplayScene，覆蓋舊的"""
+        """建立一個『全新的』GameplayScene覆蓋舊的"""
         # Reset the path before creating a new gameplay scene
         reset_path()
         self.scenes["gameplay"] = GameplayScene(self)

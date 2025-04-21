@@ -7,7 +7,7 @@ class Elephant(Tower):
     PRICE = 200
     
     def __init__(self, x, y):
-        super().__init__(x, y, range_radius=200, damage=1, attack_speed=1.0)
+        super().__init__(x, y, range_radius=200, damage=1.4, attack_speed=1.0)
         # 先用正方形代替
         self.rect = self.IMAGE.get_rect(center=(x, y))
 
