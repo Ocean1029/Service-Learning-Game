@@ -29,3 +29,8 @@ class SceneManager:
     def switch_scene(self, scene_name):
         if scene_name in self.scenes:
             self.current_scene = self.scenes[scene_name]
+
+    def reset_gameplay(self):
+        """建立一個『全新的』GameplayScene，覆蓋舊的"""
+        self.scenes["gameplay"] = GameplayScene(self)
+

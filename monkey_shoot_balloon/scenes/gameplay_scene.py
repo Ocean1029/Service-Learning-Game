@@ -8,7 +8,7 @@ from utils.path import get_path_points, is_point_near_path
 from projectiles.projectile import Projectile
 import os
 
-
+UI_PATH = "assets/images/UI"
 class GameplayScene:
     def __init__(self, scene_manager):
         self.font = pygame.font.SysFont(None, 30)
@@ -28,8 +28,6 @@ class GameplayScene:
         self.placing_tower_class = None         # 正在放置的塔類別
         self.placing_tower_image = None         # 其對應的圖片
         self.preview_angle = 0                  # 旋轉動畫所需
-
-        UI_PATH = "assets/images/UI"
 
         self.icon_coin  = pygame.image.load(os.path.join(UI_PATH, "coin.png")).convert_alpha()
         self.icon_heart = pygame.image.load(os.path.join(UI_PATH, "heart.png")).convert_alpha()

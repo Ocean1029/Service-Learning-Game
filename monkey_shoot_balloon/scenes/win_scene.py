@@ -11,6 +11,7 @@ class WinScene:
     def handle_events(self, event):
         if event.type == pygame.KEYDOWN:
             # 例如按下任何鍵返回主選單
+            self.scene_manager.reset_gameplay()  
             self.scene_manager.switch_scene("menu")
 
     def update(self, dt):

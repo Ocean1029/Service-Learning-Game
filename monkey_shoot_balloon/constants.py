@@ -13,3 +13,5 @@ GRAY = (200, 200, 200)
 INITIAL_MONEY = 300
 INITIAL_LIVES = 3
 MARGIN = 30 # 路徑邊界的距離
+
+ENEMY_SPAWN_RATE = 0.5 # 每 0.5 秒生成一隻敵人
