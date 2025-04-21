@@ -34,13 +34,13 @@ class GameplayScene:
         self.icon_heart = pygame.image.load(os.path.join(UI_PATH, "heart.png")).convert_alpha()
         self.icon_wave  = pygame.image.load(os.path.join(UI_PATH, "flag.png")).convert_alpha()
 
-        size = (48, 48)
+        size = (40, 40)
         self.icon_coin  = pygame.transform.smoothscale(self.icon_coin,  size)
         self.icon_heart = pygame.transform.smoothscale(self.icon_heart, size)
         self.icon_wave  = pygame.transform.smoothscale(self.icon_wave,  size)
 
         # 數字字體 (可用系統字或自訂字體)
-        self.ui_font = pygame.font.Font(None, 48) 
+        self.ui_font = pygame.font.Font(None, 40) 
         
 
     def spawn_projectile(self, tower_x, tower_y, enemy_x, enemy_y, tower):
@@ -84,10 +84,11 @@ class GameplayScene:
             # 左鍵點擊：真正放置塔
             if self.placing_tower_class:
                 x, y = event.pos
-
-                if is_point_near_path(x, y, self.path_points, constants.MARGIN):
-                    return
                 
+                if not self.can_place_tower(x, y, self.placing_tower_class):
+                    return       
+                
+                # 放置塔
                 self.money -= self.placing_tower_class.PRICE
                 new_tower = self.placing_tower_class(x, y)
                 self.towers.append(new_tower)
@@ -228,14 +229,32 @@ class GameplayScene:
             mx, my = pygame.mouse.get_pos()
             rotated_image = pygame.transform.rotate(self.placing_tower_image, self.preview_angle)
             # 旋轉 + 半透明
-            if is_point_near_path(mx, my, self.path_points, constants.MARGIN):
-                # 若近到不允許放置，就把透明度設為 25%
-                rotated_image.set_alpha(70)   # 70 / 255
+            if not self.can_place_tower(mx, my, self.placing_tower_class):
+                # 若近到不允許放置，就把透明度設為 20%
+                rotated_image.set_alpha(50)   # 50 / 255
             
             else:
-                # 否則預設為 50% (或你想要的值)
+                # 否則預設為 50% 透明度
                 rotated_image.set_alpha(128)
 
             # 將旋轉後的圖片置中在滑鼠座標
             preview_rect = rotated_image.get_rect(center=(mx, my))
             screen.blit(rotated_image, preview_rect)
+
+
+    def can_place_tower(self, x, y, tower_cls):
+        """回傳 True 代表可放置"""
+        # 1) 路徑安全距
+        if is_point_near_path(x, y, self.path_points, constants.MARGIN):
+            return False
+
+        # 2) 與其它塔不重疊
+        tmp_rect = tower_cls.IMAGE.get_rect(center=(x, y))
+
+        # 讓碰撞判定稍微寬鬆，可把 rect 縮小 2~4 px 再檢查
+        tmp_rect_shrink = tmp_rect.inflate(-4, -4)
+
+        for t in self.towers:
+            if tmp_rect_shrink.colliderect(t.rect):
+                return False
+        return True
