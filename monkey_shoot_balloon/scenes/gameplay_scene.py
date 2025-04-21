@@ -2,14 +2,16 @@ import pygame
 import constants
 
 from managers.wave_manager import WaveManager
+from managers.path_manager import PathManager
 from towers.elephant import Elephant
 from towers.monkey import Monkey
 from towers.giraffe import Giraffe
-from utils.path import get_path_points, is_point_near_path
+from utils.path import is_point_near_path
 from projectiles.projectile import Projectile
 import os
 
-UI_PATH = "assets/images/UI"
+# UI 圖片路徑
+
 class GameplayScene:
     def __init__(self, scene_manager):
         self.font = pygame.font.SysFont(None, 30)
@@ -19,20 +21,25 @@ class GameplayScene:
         self.enemies = []
         self.towers = []
         self.projectiles = []
-        
+    
         self.scene_manager = scene_manager
-        self.wave_manager = WaveManager()
-        self.wave_manager.start_wave(0)
+    
         
-        self.path_points = get_path_points()
+        self.path_manager = PathManager()   
+        self.path_points = self.path_manager.get() # 取得路徑座標
+        self.path_manager.reset()                    # 重置路徑，讓它可以隨機生成
+
+        self.wave_manager = WaveManager(self.path_manager) # 取得路徑物件
+        self.wave_manager.start_wave(0)
+
 
         self.placing_tower_class = None         # 正在放置的塔類別
         self.placing_tower_image = None         # 其對應的圖片
         self.preview_angle = 0                  # 旋轉動畫所需
 
-        self.icon_coin  = pygame.image.load(os.path.join(UI_PATH, "coin.png")).convert_alpha()
-        self.icon_heart = pygame.image.load(os.path.join(UI_PATH, "heart.png")).convert_alpha()
-        self.icon_wave  = pygame.image.load(os.path.join(UI_PATH, "flag.png")).convert_alpha()
+        self.icon_coin  = pygame.image.load(os.path.join(constants.UI_PATH, "coin.png")).convert_alpha()
+        self.icon_heart = pygame.image.load(os.path.join(constants.UI_PATH, "heart.png")).convert_alpha()
+        self.icon_wave  = pygame.image.load(os.path.join(constants.UI_PATH, "flag.png")).convert_alpha()
 
         size = (40, 40)
         self.icon_coin  = pygame.transform.smoothscale(self.icon_coin,  size)
@@ -166,6 +173,14 @@ class GameplayScene:
         # 畫路徑
         if len(self.path_points) > 1:
             pygame.draw.lines(screen, (0, 128, 0), False, self.path_points, 5)
+
+        # 在路徑的尾端放上 wood cabin 圖片
+        if self.path_points:
+            cabin_image = pygame.image.load(constants.PATH_END_IMAGE).convert_alpha()
+            cabin_image = pygame.transform.scale(cabin_image, (50, 50))
+            cabin_rect = cabin_image.get_rect(center=self.path_points[-1])
+            screen.blit(cabin_image, cabin_rect)
+            
         
     def draw_objects(self, screen):
         for e in self.enemies:

@@ -6,19 +6,19 @@ from enemies.tank_2 import Tank2
 import constants
 
 class WaveManager:
-    def __init__(self):
+    def __init__(self, path_manager):
         self.current_wave = 0
         self.spawn_timer = 0
         self.wave_in_progress = False
         self.enemies_to_spawn = 0
         self.all_waves_done = False
+        self.path_points = path_manager.get()
 
         # 用定義每波敵人：[敵人類型, 數量)
         self.waves = [
             [],
             [[Tank1, 5]],
             [[Tank1, 5], [Tank2, 5]],
-            
         ]
 
         self.wave_interval     = 4.0    # 波與波的間隔秒數
@@ -28,8 +28,8 @@ class WaveManager:
         self.current_wave = wave_index
         
         self.spawn_list = []
-        for balloon_class, count in self.waves[wave_index]:
-            self.spawn_list += [balloon_class for _ in range(count)]
+        for enemy_class, count in self.waves[wave_index]:
+            self.spawn_list += [enemy_class for _ in range(count)]
         self.wave_in_progress = True
         self.spawn_timer = 0
         
@@ -50,7 +50,7 @@ class WaveManager:
         self.spawn_timer += dt
         if self.spawn_timer >= constants.ENEMY_SPAWN_RATE and self.spawn_list:
             enemy_class = self.spawn_list.pop(0)
-            new_enemy = enemy_class()
+            new_enemy = enemy_class(path_points=self.path_points)
             enemies.append(new_enemy)
             self.spawn_timer = 0
 

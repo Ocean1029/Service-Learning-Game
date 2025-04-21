@@ -5,8 +5,8 @@ import pygame
 class Tank2(Enemy):
     IMAGE = pygame.image.load("assets/images/enemy/tank2.png")
     IMAGE = pygame.transform.scale(IMAGE, (40, 40))
-    def __init__(self):
-        super().__init__(health=3, speed=100, reward=20)
+    def __init__(self, path_points):
+        super().__init__(path_points=path_points, health=3, speed=100, reward=20)
         # 先用圓形代替
         self.rect = self.IMAGE.get_rect()
         self.rect.center = (int(self.x), int(self.y))

@@ -1,15 +1,11 @@
-# enemies/balloon.py
-import pygame
-from utils.path import get_path_points
-
 class Enemy:
     IMAGE = None
-    def __init__(self, health=1, speed=60, reward=10):
+    def __init__(self, path_points, health=1, speed=60, reward=10):
         self.health = health
         self.speed = speed
         self.reward = reward
 
-        self.path = get_path_points()
+        self.path = path_points
         self.current_path_index = 0
         self.x, self.y = self.path[0]
 
