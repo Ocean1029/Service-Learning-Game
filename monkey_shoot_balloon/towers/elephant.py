@@ -12,6 +12,3 @@ class Elephant(Tower):
         self.rect = self.IMAGE.get_rect(center=(x, y))
 
     
-    def attack(self, enemy):
-        # dart_monkey 可能是單體攻擊
-        enemy.take_damage(self.damage)

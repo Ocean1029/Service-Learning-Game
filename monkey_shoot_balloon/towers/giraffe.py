@@ -10,7 +10,3 @@ class Giraffe(Tower):
         super().__init__(x, y, range_radius=50, damage=0.3, attack_speed=3.0)
         # 先用正方形代替
         self.rect = self.IMAGE.get_rect(center=(x, y))
-
-    def attack(self, enemy):
-        # dart_monkey 可能是單體攻擊
-        enemy.take_damage(self.damage)

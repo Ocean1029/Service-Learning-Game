@@ -40,14 +40,12 @@ class Tower:
             return min(in_range, key=lambda e: math.hypot(e.x - self.x, e.y - self.y))
         return None
 
-    def attack(self, enemy):
-        # 造成傷害，或生成 projectile 等
-        
-        enemy.take_damage(self.damage)
 
     def draw(self, screen):
-        # 繪製塔的圖片
-        if self.IMAGE and self.rect:
-            screen.blit(self.IMAGE, self.rect)
-        # 也可選擇在 debug 時繪製攻擊範圍
-        # pygame.draw.circle(screen, (255,0,0), (int(self.x), int(self.y)), self.range_radius, 1)
+        shadow_surface = pygame.Surface((self.range_radius*2, self.range_radius*2), pygame.SRCALPHA)
+        pygame.draw.circle(shadow_surface, (0, 0, 0, 60), (self.range_radius, self.range_radius), 10)
+        screen.blit(shadow_surface, (self.x - self.range_radius, self.y - self.range_radius))
+
+        # 畫塔圖片
+        screen.blit(self.IMAGE, self.IMAGE.get_rect(center=(self.x, self.y)))
+
