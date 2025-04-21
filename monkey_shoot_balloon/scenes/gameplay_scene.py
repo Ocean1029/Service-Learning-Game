@@ -76,9 +76,9 @@ class GameplayScene:
                 self.placing_tower_class = Giraffe
                 self.placing_tower_image = Giraffe.IMAGE
 
-            # 按 N 且前一波敵人已經全部消失，就開始下一波
-            if event.key == pygame.K_n and not self.wave_manager.wave_in_progress and not self.wave_manager.all_waves_done:
-                self.wave_manager.next_wave()
+            # # 按 N 且前一波敵人已經全部消失，就開始下一波
+            # if event.key == pygame.K_n and not self.wave_manager.wave_in_progress and not self.wave_manager.all_waves_done:
+            #     self.wave_manager.next_wave()
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             # 左鍵點擊：真正放置塔
@@ -151,10 +151,10 @@ class GameplayScene:
 
     def draw(self, screen):
         """ 負責畫出當前場景的一切 """
-        screen.fill(constants.WHITE)
-        # 先畫出路線（以方便看出敵人路徑）
-        if len(self.path_points) > 1:
-            pygame.draw.lines(screen, (0, 128, 0), False, self.path_points, 5)
+        
+        # 畫背景
+        self.draw_background(screen)
+
         for e in self.enemies:
             e.draw(screen)
         for t in self.towers:
@@ -162,7 +162,58 @@ class GameplayScene:
         for p in self.projectiles:
             p.draw(screen)
 
+        # 畫 UI
+        self.draw_ui(screen)
+        self.draw_interval_ui(screen)
+
+        # 畫放置中的塔
+        self.draw_placing_tower(screen)
+        
+        pygame.display.flip()
+
+
+    def draw_background(self, screen):
+        
+        screen.fill((150, 150, 150))
+
+        # 畫路徑
+        if len(self.path_points) > 1:
+            pygame.draw.lines(screen, (0, 128, 0), False, self.path_points, 5)
+        
+
+    def draw_interval_ui(self, screen):
+        """波次間隔倒數條 + 文字"""
+
+        if self.wave_manager.wave_in_progress or self.wave_manager.all_waves_done:
+            return  # 戰鬥中或已通關就不用畫
+
+        # --- 參數 ---
+        center_x = constants.SCREEN_WIDTH // 2
+        base_y   = constants.SCREEN_HEIGHT - 120     # 距底 120px，可自行調
+        bar_w, bar_h = 300, 20                       # 倒數條尺寸
+        ratio = self.wave_manager.get_interval_ratio()
+        remain = int(self.wave_manager.wave_interval - self.wave_manager.inter_wave_timer + 0.999)
+
+        # --- 底框 ---
+        pygame.draw.rect(
+            screen, (70, 70, 70),
+            pygame.Rect(center_x - bar_w//2, base_y, bar_w, bar_h), border_radius=6)
+
+        # --- 進度條（橘色）---
+        fill_w = int(bar_w * (1 - ratio))
+        pygame.draw.rect(
+            screen, (255, 165, 0),
+            pygame.Rect(center_x - bar_w//2, base_y, fill_w, bar_h), border_radius=6)
+
+        # --- 邊框 ---
+        pygame.draw.rect(
+            screen, (255, 255, 255),
+            pygame.Rect(center_x - bar_w//2, base_y, bar_w, bar_h), 2, border_radius=6)
+
+
+    def draw_ui(self, screen):
         icon_pos_x = 700
+
         # -------- 金錢 --------
         screen.blit(self.icon_coin, (icon_pos_x, 12))
         money_txt = self.ui_font.render(str(self.money), True, constants.BLACK)
@@ -178,6 +229,7 @@ class GameplayScene:
         wave_txt = self.ui_font.render(str(self.wave_manager.current_wave + 1), True, constants.BLACK)
         screen.blit(wave_txt, (icon_pos_x + 28, 84))
 
+    def draw_placing_tower(self, screen):
         if self.placing_tower_class:
             mx, my = pygame.mouse.get_pos()
             rotated_image = pygame.transform.rotate(self.placing_tower_image, self.preview_angle)
@@ -193,5 +245,3 @@ class GameplayScene:
             # 將旋轉後的圖片置中在滑鼠座標
             preview_rect = rotated_image.get_rect(center=(mx, my))
             screen.blit(rotated_image, preview_rect)
-
-        pygame.display.flip()
