@@ -1,8 +1,10 @@
 import pygame
 import constants
+import random
 
 from managers.wave_manager import WaveManager
 from managers.path_manager import PathManager
+from decors.decor import Decor
 from towers.elephant import Elephant
 from towers.monkey import Monkey
 from towers.giraffe import Giraffe
@@ -49,6 +51,8 @@ class GameplayScene:
         # 數字字體 (可用系統字或自訂字體)
         self.ui_font = pygame.font.Font(None, 40) 
         
+        self.decor_images = self.load_decor_images()
+        self.decorations = self.generate_decorations(10) 
 
     def spawn_projectile(self, tower_x, tower_y, enemy_x, enemy_y, tower):
         p = Projectile(tower_x, tower_y, enemy_x, enemy_y, tower)
@@ -159,6 +163,7 @@ class GameplayScene:
 
     def draw(self, screen):
         self.draw_background(screen) # 畫背景
+        self.draw_decorations(screen) # 畫裝飾物
         self.draw_objects(screen) # 畫所有物件
         self.draw_ui(screen) # 畫 UI
         self.draw_interval_ui(screen) # 畫波次間隔條
@@ -196,6 +201,9 @@ class GameplayScene:
             cabin_rect = cabin_image.get_rect(center=self.path_points[-1])
             screen.blit(cabin_image, cabin_rect)
             
+    def draw_decorations(self, screen):
+        for d in self.decorations:
+            d.draw(screen)
         
     def draw_objects(self, screen):
         for e in self.enemies:
@@ -204,7 +212,7 @@ class GameplayScene:
             t.draw(screen)
         for p in self.projectiles:
             p.draw(screen)
-
+        
 
     def draw_interval_ui(self, screen):
         """波次間隔倒數條 + 文字"""
@@ -288,3 +296,35 @@ class GameplayScene:
             if tmp_rect_shrink.colliderect(t.rect):
                 return False
         return True
+    
+    def load_decor_images(self):
+        decor_imgs = []
+        for filename in os.listdir(constants.DECOR_PATH):
+            if filename.endswith(".png"):
+                img = pygame.image.load(os.path.join(constants.DECOR_PATH, filename)).convert_alpha()
+                img = pygame.transform.smoothscale(img, (40, 40))
+                decor_imgs.append(img)
+        return decor_imgs
+    
+    def generate_decorations(self, count):
+        decorations = []
+        tries = 0
+
+        while len(decorations) < count and tries < count * 5:
+            tries += 1
+            x = random.randint(40, constants.SCREEN_WIDTH - 40)
+            y = random.randint(40, constants.SCREEN_HEIGHT - 40)
+
+            # 避開路徑
+            if is_point_near_path(x, y, self.path_points, margin=constants.MARGIN):
+                continue
+            
+            # 避開右上角 UI 區域
+            if x > constants.SCREEN_WIDTH - 150 and y < 200:
+                continue
+
+            image = random.choice(self.decor_images)
+            image.set_alpha(128)
+            
+            decorations.append(Decor(image, x, y))
+        return decorations
