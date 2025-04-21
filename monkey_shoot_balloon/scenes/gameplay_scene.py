@@ -266,6 +266,10 @@ class GameplayScene:
     def draw_ui(self, screen):
         icon_pos_x = 600
 
+        bar_height = 80
+        bar_rect = pygame.Rect(0, constants.SCREEN_HEIGHT - bar_height, constants.SCREEN_WIDTH, bar_height)
+        pygame.draw.rect(screen, (60, 90, 60), bar_rect)
+
         for btn in self.tower_buttons:
             btn.draw(screen, self.money)
 
