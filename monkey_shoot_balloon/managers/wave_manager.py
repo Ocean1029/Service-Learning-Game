@@ -15,13 +15,14 @@ class WaveManager:
 
         # 用定義每波敵人：[敵人類型, 數量)
         self.waves = [
+            [],
             [[Tank1, 5]],
             [[Tank1, 5], [Tank2, 5]],
             
         ]
 
         self.wave_interval     = 4.0    # 波與波的間隔秒數
-        self.inter_wave_timer  = 0.0     # 倒數計時器
+        self.inter_wave_timer  = 4.0     # 倒數計時器
 
     def start_wave(self, wave_index):
         self.current_wave = wave_index

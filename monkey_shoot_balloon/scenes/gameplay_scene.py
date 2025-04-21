@@ -221,7 +221,7 @@ class GameplayScene:
 
         # -------- 波次 --------
         screen.blit(self.icon_wave, (icon_pos_x, 140))
-        wave_txt = self.ui_font.render(str(self.wave_manager.current_wave + 1), True, constants.BLACK)
+        wave_txt = self.ui_font.render(str(self.wave_manager.current_wave), True, constants.BLACK)
         screen.blit(wave_txt, (icon_pos_x + 60, 140))
 
     def draw_placing_tower(self, screen):
