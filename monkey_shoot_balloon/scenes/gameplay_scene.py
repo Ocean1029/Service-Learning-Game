@@ -189,9 +189,11 @@ class GameplayScene:
     def draw(self, screen):
         self.draw_background(screen) # 畫背景
         self.draw_decorations(screen) # 畫裝飾物
+        self.draw_path(screen) # 畫路徑
         self.draw_objects(screen) # 畫所有物件
         self.draw_ui(screen) # 畫 UI
         self.draw_interval_ui(screen) # 畫波次間隔條
+        self.draw_path_end(screen) # 畫路徑結尾的木屋
         self.draw_placing_tower(screen) # 畫放置中的塔
         
         pygame.display.flip()
@@ -208,24 +210,16 @@ class GameplayScene:
             g = int(top_color[1] * (1 - ratio) + bottom_color[1] * ratio)
             b = int(top_color[2] * (1 - ratio) + bottom_color[2] * ratio)
             pygame.draw.line(screen, (r, g, b), (0, y), (constants.SCREEN_WIDTH, y))
+    
+    def draw_path(self, screen):
+        if len(self.path_points) >= 2:
+            # 陰影底線（深）
+            pygame.draw.lines(screen, (40, 100, 40), False, self.path_points, 20)
+            # 主體中線（草色）
+            pygame.draw.lines(screen, (80, 160, 80), False, self.path_points, 14)
+            # 白中線
+            pygame.draw.lines(screen, (255, 255, 255), False, self.path_points, 2)
 
-        # 畫路徑
-        if len(self.path_points) < 2:
-            return
-        # 陰影底線
-        pygame.draw.lines(screen, (0, 100, 0), False, self.path_points, 20)
-        # 道路主體（亮一點）
-        pygame.draw.lines(screen, (34, 139, 34), False, self.path_points, 14)
-        # 中線
-        pygame.draw.lines(screen, (255, 255, 255), False, self.path_points, 2)
-        
-        # 在路徑的尾端放上 wood cabin 圖片
-        if self.path_points:
-            cabin_image = pygame.image.load(constants.PATH_END_IMAGE).convert_alpha()
-            cabin_image = pygame.transform.scale(cabin_image, (50, 50))
-            cabin_rect = cabin_image.get_rect(center=self.path_points[-1])
-            screen.blit(cabin_image, cabin_rect)
-            
     def draw_decorations(self, screen):
         for d in self.decorations:
             d.draw(screen)
@@ -317,6 +311,13 @@ class GameplayScene:
             preview_rect = rotated_image.get_rect(center=(mx, my))
             screen.blit(rotated_image, preview_rect)
 
+    def draw_path_end(self, screen):
+        # 在路徑的尾端放上 wood cabin 圖片
+        if self.path_points:
+            cabin_image = pygame.image.load(constants.PATH_END_IMAGE).convert_alpha()
+            cabin_image = pygame.transform.scale(cabin_image, (50, 50))
+            cabin_rect = cabin_image.get_rect(center=self.path_points[-1])
+            screen.blit(cabin_image, cabin_rect)
 
     def can_place_tower(self, x, y, tower_cls):
         """回傳 True 代表可放置"""
