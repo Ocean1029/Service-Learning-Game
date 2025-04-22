@@ -72,11 +72,10 @@ class GameplayScene:
             self.tower_buttons.append(btn)
 
         
-        TILE_SIZE = 64  # 假設每張 tile 都是 64x64
-
         def load_tile(name):
             img = pygame.image.load(os.path.join(constants.TILE_PATH, name)).convert_alpha()
-            return pygame.transform.smoothscale(img, (TILE_SIZE, TILE_SIZE))
+            img = pygame.transform.smoothscale(img, (constants.TILE_SIZE, constants.TILE_SIZE))
+            return img
 
         # base tiles
         self.tile_images = {
@@ -411,10 +410,7 @@ class GameplayScene:
         self.preview_angle = 0
 
     
-
-
     def draw_path_tile(self, screen):
-
         def expand_path_points(waypoints, step=64):
             """ 將每對連續點之間插值成一段段固定距離的 path 點 """
             expanded = []
@@ -433,7 +429,7 @@ class GameplayScene:
             return expanded
 
 
-        def get_tile_type(prev, curr, nxt, DEBUG=False):
+        def get_tile_type(prev, curr, nxt):
             """
             prev, curr, nxt: 三個點座標 (x, y)
             回傳值： "straight_h" / "straight_v" / "curve_0" / "curve_90" / "curve_180" / "curve_270"
@@ -453,13 +449,6 @@ class GameplayScene:
 
             dir1, dir2 = norm(dx1, dy1), norm(dx2, dy2)
 
-            # 3. 先檢查直線
-            if dir1 == dir2:
-                tile = "straight_h" if dir1[0] != 0 else "straight_v"
-                if DEBUG: print(f"{dir1}->{dir2} → {tile}")
-                return tile
-
-            # 4. 曲線對映 (0°=左→上，依順時針分別是 0,90,180,270)
             curve_mapping = {
                 # 0°: 左→上
                 ((-1, 0), (0, 1)): "curve_0",
@@ -479,21 +468,13 @@ class GameplayScene:
             }
 
             tile = curve_mapping.get((dir1, dir2))
-            if DEBUG:
-                print(f"{dir1}->{dir2} →", tile if tile else "不在 mapping，fallback")
 
             if tile:
                 return tile
 
-            # 5. 萬一都不符合：動態回傳直線方向
+            # 萬一都不符合：動態回傳直線方向
             return "straight_h" if dir1[0] != 0 else "straight_v"
-
-        
-        def is_diagonal_segment(p1, p2):
-            dx = abs(p2[0] - p1[0])
-            dy = abs(p2[1] - p1[1])
-            return dx == dy and dx > 0  # 左上到右下
-        
+                
         pts = expand_path_points(self.path_points)
         if len(pts) < 2:
             return
@@ -501,20 +482,9 @@ class GameplayScene:
         extended = [pts[0]] + pts + [pts[-1]] # 延長路徑，讓兩端的 tile 也能畫出來
 
         for i in range(1, len(extended) - 1):
-            prev_pt = extended[i - 1]
-            curr_pt = extended[i]
-            next_pt = extended[i + 1]
-
-            # 特例：最後一格是 funnel
-            if i == len(extended) - 2:
-                tile_img = self.tile_images["funnel"]
-            # 特例：某條為斜對角
-            elif is_diagonal_segment(prev_pt, curr_pt) or is_diagonal_segment(curr_pt, next_pt):
-                tile_img = self.tile_images["diagonal"]
-            else:
-                tile_type = get_tile_type(prev_pt, curr_pt, next_pt)
-                print(tile_type)
-                tile_img = self.tile_images[tile_type]
-            
+            prev_pt, curr_pt, next_pt = extended[i-1], extended[i], extended[i+1]
+            tile_type = get_tile_type(prev_pt, curr_pt, next_pt)
+            tile_img = self.tile_images[tile_type]        
             rect = tile_img.get_rect(center=curr_pt)
+            
             screen.blit(tile_img, rect)

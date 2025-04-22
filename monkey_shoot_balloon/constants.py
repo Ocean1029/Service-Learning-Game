@@ -22,7 +22,6 @@ ENEMY_SPAWN_RATE = 0.5 # 每 0.5 秒生成一隻敵人
 # UI path
 UI_PATH = os.path.join("assets", "images", "UI")
 DECOR_PATH = os.path.join("assets", "images", "decor")
-# path end image
 PATH_END_IMAGE = os.path.join("assets", "images", "wood-cabin.png")
 
 STATIC_PATH = [
@@ -44,3 +43,4 @@ STATIC_PATH = [
 PATH_MODE = "static"   # "static" | "random"
 
 TILE_PATH = os.path.join("assets", "images", "tiles")
+TILE_SIZE = 64

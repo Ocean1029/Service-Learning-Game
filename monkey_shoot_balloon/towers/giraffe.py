@@ -4,9 +4,9 @@ import pygame
 class Giraffe(Tower):
     IMAGE = pygame.image.load("assets/images/tower/giraffe.png")
     IMAGE = pygame.transform.scale(IMAGE, (40, 40))
-    PRICE = 50
+    PRICE = 70
 
     def __init__(self, x, y):
-        super().__init__(x, y, range_radius=80, damage=0.1, attack_speed=8.0)
+        super().__init__(x, y, range_radius=80, damage=0.1, attack_speed=10.0)
         # 先用正方形代替
         self.rect = self.IMAGE.get_rect(center=(x, y))

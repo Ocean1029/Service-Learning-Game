@@ -2,7 +2,7 @@ import pygame
 import math
 
 class Projectile:
-    IMAGE = pygame.Surface((10, 10))
+    IMAGE = pygame.Surface((7, 7))
     IMAGE.fill((50,50,50))
 
     def __init__(self, x, y, target_x, target_y, tower):
