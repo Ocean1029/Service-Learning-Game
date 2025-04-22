@@ -1,5 +1,6 @@
 import pygame
 import math
+import constants
 
 class Projectile:
     IMAGE = pygame.Surface((7, 7))
@@ -38,9 +39,8 @@ class Projectile:
         self.rect.center = (int(self.x), int(self.y))
 
         # 如果飛出螢幕，也可以將它標記為死亡（避免浪費記憶體）
-        # 假設螢幕大小 800 x 600
-        if (self.rect.right < 0 or self.rect.left > 800 or 
-            self.rect.bottom < 0 or self.rect.top > 600):
+        if (self.x < 0 or self.x > constants.SCREEN_WIDTH or
+            self.y < 0 or self.y > constants.SCREEN_HEIGHT):
             self.alive = False
 
     def draw(self, screen):
