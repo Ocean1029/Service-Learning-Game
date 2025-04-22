@@ -47,7 +47,6 @@ GRID_PATH = [
     [8,7],
     [12,7],
     [12,10],
-
 ]
 
 STATIC_PATH = [[col * 64, row * 64] for (col, row) in GRID_PATH]

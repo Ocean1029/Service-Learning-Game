@@ -21,6 +21,7 @@ class WaveManager:
             [[Tank2, 3], [Tank1, 5]],
             [[Tank1, 5], [Tank2, 5], [Tank1, 5], [Tank3, 1]],
             [[Tank3, 3], [Tank1, 5], [Tank2, 5], [Tank3, 2]],
+            []
         ]
 
         self.wave_interval     = 4.0    # 波與波的間隔秒數
