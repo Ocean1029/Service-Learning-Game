@@ -1,3 +1,4 @@
+import os
 import pygame
 import constants
 import random
@@ -10,14 +11,13 @@ from towers.elephant import Elephant
 from towers.monkey import Monkey
 from towers.giraffe import Giraffe
 from utils.path import is_point_near_path
+from utils.image_scaler import blit_tiled_background
 from projectiles.projectile import Projectile
-import os
 
-# UI 圖片路徑
 
 class GameplayScene:
     def __init__(self, scene_manager):
-        self.font = pygame.font.SysFont(None, 30)
+        
         
         self.money = constants.INITIAL_MONEY
         self.life = constants.INITIAL_LIVES
@@ -26,7 +26,6 @@ class GameplayScene:
         self.projectiles = []
     
         self.scene_manager = scene_manager
-    
         
         self.path_manager = PathManager()   
         self.path_points = self.path_manager.get() # 取得路徑座標
@@ -34,7 +33,6 @@ class GameplayScene:
 
         self.wave_manager = WaveManager(self.path_manager) # 取得路徑物件
         self.wave_manager.start_wave(0)
-
 
         self.placing_tower_class = None         # 正在放置的塔類別
         self.placing_tower_image = None         # 其對應的圖片
@@ -44,27 +42,34 @@ class GameplayScene:
         self.icon_heart = pygame.image.load(os.path.join(constants.UI_PATH, "heart.png")).convert_alpha()
         self.icon_wave  = pygame.image.load(os.path.join(constants.UI_PATH, "flag.png")).convert_alpha()
 
-        size = (40, 40)
+        size = (40, 40) # 圖示大小
         self.icon_coin  = pygame.transform.smoothscale(self.icon_coin,  size)
         self.icon_heart = pygame.transform.smoothscale(self.icon_heart, size)
         self.icon_wave  = pygame.transform.smoothscale(self.icon_wave,  size)
 
-        # 數字字體 (可用系統字或自訂字體)
-        self.ui_font = pygame.font.Font(None, 40) 
+        self.font = pygame.font.SysFont(None, 30)
+        self.ui_font = pygame.font.Font(constants.UI_FONT, 40)
         
         self.decor_images = self.load_decor_images()
-        self.decorations = self.generate_decorations(10) 
+        self.decorations = self.generate_decorations(0) 
 
         self.tower_buttons = []
 
         tower_classes = [Elephant, Monkey, Giraffe]
-        start_x = 40
+        bar_width = 200
+        bar_x = constants.SCREEN_WIDTH - bar_width
+        start_y = 250          # 距離頂端的起始位置
+        btn_width = bar_width - 40  # 留左右 padding
+        btn_height = 80
+        gap_y = 50
+
+        self.tower_buttons = []  # 清空舊的按鈕列表
         for i, tower_cls in enumerate(tower_classes):
             btn = UIButton(
-                x=start_x + i*140,
-                y=constants.SCREEN_HEIGHT - 70,
-                width=120,
-                height=60,
+                x=bar_x + 20,  # 留左右 padding
+                y=start_y + i * (btn_height + gap_y),
+                width=btn_width,
+                height=btn_height,
                 tower_cls=tower_cls,
                 font=self.ui_font,
                 on_click=self.select_tower
@@ -232,16 +237,9 @@ class GameplayScene:
 
     def draw_background(self, screen):
         
-        top_color = (180, 220, 180)
-        bottom_color = (100, 160, 100)
-        height = constants.SCREEN_HEIGHT
-
-        for y in range(height):
-            ratio = y / height
-            r = int(top_color[0] * (1 - ratio) + bottom_color[0] * ratio)
-            g = int(top_color[1] * (1 - ratio) + bottom_color[1] * ratio)
-            b = int(top_color[2] * (1 - ratio) + bottom_color[2] * ratio)
-            pygame.draw.line(screen, (r, g, b), (0, y), (constants.SCREEN_WIDTH, y))
+        # 引入圖片 constants.BACKGROUND_IMAGE
+        background_image = pygame.image.load(constants.BACKGROUND_IMAGE).convert()
+        blit_tiled_background(screen, background_image)
     
     def draw_path_tile(self, screen):
         if len(self.path_points) >= 2:
@@ -263,7 +261,46 @@ class GameplayScene:
             t.draw(screen)
         for p in self.projectiles:
             p.draw(screen)
-        
+
+    def draw_ui(self, screen):
+
+        def draw_tower_sidebar(screen, tower_buttons, money, ui_font):
+            bar_width = 200
+            bar_x = constants.SCREEN_WIDTH - bar_width
+
+            # 背景底色＋圓角＋陰影邊框
+            bar_rect = pygame.Rect(bar_x, 0, bar_width, constants.SCREEN_HEIGHT)
+            pygame.draw.rect(screen, (42, 55, 42), bar_rect, border_radius=0)  # 深綠底
+
+            # 側邊線（亮色或立體感）
+            pygame.draw.line(screen, (70, 100, 70), (bar_x, 0), (bar_x, constants.SCREEN_HEIGHT), 4)
+
+            # 繪製按鈕
+            button_y_offset = 80
+            for btn in tower_buttons:
+                btn.draw(screen, money)
+                button_y_offset += 80  # 視 btn 大小調整
+
+        draw_tower_sidebar(screen, self.tower_buttons, self.money, self.ui_font)
+
+        icon_pos_x = constants.SCREEN_WIDTH - 160
+        y_gap = 60
+
+        # 金幣
+        screen.blit(self.icon_coin, (icon_pos_x, 20))
+        money_txt = self.ui_font.render(str(self.money), True, constants.WHITE)
+        screen.blit(money_txt, (icon_pos_x + 60, 20))
+
+        # 生命
+        screen.blit(self.icon_heart, (icon_pos_x, 20 + y_gap))
+        life_txt = self.ui_font.render(str(self.life), True, constants.WHITE)
+        screen.blit(life_txt, (icon_pos_x + 60, 20 + y_gap))
+
+        # 波次
+        screen.blit(self.icon_wave, (icon_pos_x, 20 + 2 * y_gap))
+        wave_txt = self.ui_font.render(str(self.wave_manager.current_wave), True, constants.WHITE)
+        screen.blit(wave_txt, (icon_pos_x + 60, 20 + 2 * y_gap))
+
 
     def draw_interval_ui(self, screen):
         """波次間隔倒數條 + 文字"""
@@ -293,32 +330,6 @@ class GameplayScene:
         pygame.draw.rect(
             screen, (255, 255, 255),
             pygame.Rect(center_x - bar_w//2, base_y, bar_w, bar_h), 2, border_radius=6)
-
-
-    def draw_ui(self, screen):
-        icon_pos_x = 600
-
-        bar_height = 80
-        bar_rect = pygame.Rect(0, constants.SCREEN_HEIGHT - bar_height, constants.SCREEN_WIDTH, bar_height)
-        pygame.draw.rect(screen, (60, 90, 60), bar_rect)
-
-        for btn in self.tower_buttons:
-            btn.draw(screen, self.money)
-
-        # -------- 金錢 --------
-        screen.blit(self.icon_coin, (icon_pos_x, 20))
-        money_txt = self.ui_font.render(str(self.money), True, constants.BLACK)
-        screen.blit(money_txt, (icon_pos_x + 60, 20))       # 圖示右側 4px
-
-        # -------- 生命 --------
-        screen.blit(self.icon_heart, (icon_pos_x, 80))
-        life_txt = self.ui_font.render(str(self.life), True, constants.BLACK)
-        screen.blit(life_txt, (icon_pos_x + 60, 80))
-
-        # -------- 波次 --------
-        screen.blit(self.icon_wave, (icon_pos_x, 140))
-        wave_txt = self.ui_font.render(str(self.wave_manager.current_wave), True, constants.BLACK)
-        screen.blit(wave_txt, (icon_pos_x + 60, 140))
 
     def draw_placing_tower(self, screen):
         if self.placing_tower_class: # 如果正在放置塔，class 不為 None 則繼續判斷

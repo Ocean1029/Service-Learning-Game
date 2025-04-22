@@ -1,10 +1,11 @@
 import os
+import pygame
 
 # constants.py
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
-FPS = 60
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 720
+FPS = 120
 
 # 顏色
 WHITE = (255, 255, 255)
@@ -24,23 +25,39 @@ UI_PATH = os.path.join("assets", "images", "UI")
 DECOR_PATH = os.path.join("assets", "images", "decor")
 PATH_END_IMAGE = os.path.join("assets", "images", "wood-cabin.png")
 
-STATIC_PATH = [
-    [64, 0],     # 起點：最上方靠左一格
-    [64, 128],   # 向下 2 格
-    [256, 128],  # 向右 3 格
-    [256, 192],  # 向下 1 格
-    [128, 192],  # 向左 2 格
-    [128, 320],  # 向下 2 格
-    [384, 320],  # 向右 4 格
-    [384, 128],  # 向上 3 格
-    [512, 128],  # 向右 2 格
-    [512, 384],  # 向下 4 格
-    [704, 384],  # 向右 3 格
-    [704, 512]   # 向下 2 格（終點）
+
+# 路徑座標
+GRID_PATH = [
+    [2,0],
+    [2,4],
+    [3,4],
+    [3,5],
+    [4,5],
+    [7,5],
+    [7,8],
+    [5,8],
+    [5,2],
+    [9,2],
+    [9,4],
+    [15,4],
+    [15,6],
+    [9,6],
+    [9,9],
+    [8,9],
+    [8,7],
+    [12,7],
+    [12,10],
+
 ]
+
+STATIC_PATH = [[col * 64, row * 64] for (col, row) in GRID_PATH]
+
 
 
 PATH_MODE = "static"   # "static" | "random"
 
 TILE_PATH = os.path.join("assets", "images", "tiles")
 TILE_SIZE = 64
+
+UI_FONT = os.path.join("assets", "fonts", "font.otf")
+BACKGROUND_IMAGE = os.path.join("assets", "images", "background.png")
