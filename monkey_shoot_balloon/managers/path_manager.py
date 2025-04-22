@@ -13,14 +13,14 @@ class PathManager:
             if self.mode == "static":
                 self.path_points = [list(p) for p in constants.STATIC_PATH]
             else:
-                self.path_points = self._generate_random()
+                self.path_points = self.generate_random_path()
         return self.path_points
 
     def reset(self):
         self.path_points = None
 
     # ---------- 內部 ----------
-    def generate_random_path():
+    def generate_random_path(self):
         """Generate a random path for enemies to follow"""
         screen_width = 800
         screen_height = 600
