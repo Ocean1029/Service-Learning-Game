@@ -15,8 +15,9 @@ class Projectile:
         self.speed = speed
         self.damage = tower.damage  # 傷害
         self.alive = True
-        self.trail = []  # projectile 初始化時加這行
         self.effect_manager = effect_manager
+        self.aoe_range = 0
+        self.trail = []
 
         # 朝向目標的方向
         dx = target_x - x

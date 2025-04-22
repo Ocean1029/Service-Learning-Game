@@ -15,6 +15,7 @@ class Cannonball(Projectile):
         """
         super().__init__(x, y, target_x, target_y, tower, effect_manager, speed=800.0)
         self.rect = self.IMAGE.get_rect(center=(x, y))
+        self.aoe_range = 0
     
     def hit(self):
         super().hit()

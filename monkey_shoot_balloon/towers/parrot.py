@@ -2,12 +2,12 @@ from .tower import Tower
 import pygame
 from projectiles.cannonball import Cannonball
 
-class Giraffe(Tower):
-    IMAGE = pygame.image.load("assets/images/tower/giraffe.png")
+class Parrot(Tower):
+    IMAGE = pygame.image.load("assets/images/tower/parrot.png")
     IMAGE = pygame.transform.scale(IMAGE, (40, 40))
-    PRICE = 60
+    PRICE = 140
 
     def __init__(self, x, y):
-        super().__init__(x, y, range_radius=80, damage=0.1, attack_speed=10.0)
+        super().__init__(x, y, range_radius=300, damage=0.5, attack_speed=4.0)
         self.rect = self.IMAGE.get_rect(center=(x, y))
         self.projectile_type = Cannonball

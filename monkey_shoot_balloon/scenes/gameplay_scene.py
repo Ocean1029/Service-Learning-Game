@@ -11,6 +11,8 @@ from UI.UI_button import UIButton
 from towers.elephant import Elephant
 from towers.monkey import Monkey
 from towers.giraffe import Giraffe
+from towers.parrot import Parrot
+from towers.tower import Tower
 from utils.path import is_point_near_path
 from utils.image_scaler import blit_tiled_background
 from projectiles.fireball import Fireball
@@ -20,8 +22,7 @@ from projectiles.cannonball import Cannonball
 class GameplayScene:
     def __init__(self, scene_manager):
         
-        tower_classes = [Elephant, Monkey, Giraffe]
-        Projectile_classes = [Fireball, Cannonball]
+        tower_classes = [Elephant, Monkey, Giraffe, Parrot]
         
         self.money = constants.INITIAL_MONEY
         self.life = constants.INITIAL_LIVES
@@ -65,7 +66,7 @@ class GameplayScene:
         start_y = 250          # 距離頂端的起始位置
         btn_width = bar_width - 40  # 留左右 padding
         btn_height = 80
-        gap_y = 50
+        gap_y = 30
 
         self.tower_buttons = []  # 清空舊的按鈕列表
         for i, tower_cls in enumerate(tower_classes):
@@ -150,6 +151,12 @@ class GameplayScene:
                 self.placing_tower_class = Giraffe
                 self.placing_tower_image = Giraffe.IMAGE
 
+            if event.key == pygame.K_4:
+                if self.money < Parrot.PRICE:
+                    return
+                self.placing_tower_class = Parrot
+                self.placing_tower_image = Parrot.IMAGE
+
             # # 按 N 且前一波敵人已經全部消失，就開始下一波
             # if event.key == pygame.K_n and not self.wave_manager.wave_in_progress and not self.wave_manager.all_waves_done:
             #     self.wave_manager.next_wave()
@@ -215,20 +222,33 @@ class GameplayScene:
             self.scene_manager.switch_scene("win")
 
     def check_projectile_collisions(self):
-        """ 檢查飛行物與敵人之間的碰撞 """
+        """ 檢查飛行物與敵人之間的碰撞（支援 AoE） """
         for p in self.projectiles:
             if not p.alive:
                 continue
-            # 可用 bounding circle, 或 rect.colliderect
+
             for e in self.enemies:
-                if e.alive and p.alive:
-                    # 簡單示範：用 rect 碰撞檢查
-                    if p.rect.colliderect(e.rect):
-                        # 命中
+                if e.alive and p.alive and p.rect.colliderect(e.rect):
+                    p.hit()
+                    center_x, center_y = p.rect.center
+
+                    if p.aoe_range == 0:
                         e.take_damage(p.damage)
-                        p.hit()  # Projectile 自己標記死亡
-                    if not e.alive:
-                        self.money += e.reward
+                        if not e.alive:
+                            self.money += e.reward
+
+                    # 若為 AoE → 傷害範圍內所有敵人
+                    if p.aoe_range > 0:
+                        for target in self.enemies:
+                            if target.alive:
+                                dist_sq = (target.rect.centerx - center_x) ** 2 + (target.rect.centery - center_y) ** 2
+                                if dist_sq <= p.aoe_range ** 2:
+                                    target.take_damage(p.damage)
+                                    if not target.alive:
+                                        self.money += target.reward
+                    break  # 碰撞後就不再檢查其他敵人
+                                
+                    
 
     def draw(self, screen):
         self.draw_background(screen) # 畫背景
@@ -269,7 +289,7 @@ class GameplayScene:
         for p in self.projectiles:
             p.draw(screen)
         self.effect_manager.draw(screen)
-        
+
     def draw_ui(self, screen):
 
         def draw_tower_sidebar(screen, tower_buttons, money, ui_font):

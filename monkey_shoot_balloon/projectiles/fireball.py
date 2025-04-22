@@ -27,6 +27,7 @@ class Fireball(Projectile):
         self.angle = self.calculate_angle(target_x, target_y)
         self.image = pygame.transform.rotate(self.IMAGE, self.angle)
         self.rect = self.image.get_rect(center=(x, y))
+        self.aoe_range = 80
 
     def draw(self, screen):
         # 先繼承父類的draw方法
