@@ -71,6 +71,39 @@ class GameplayScene:
             )
             self.tower_buttons.append(btn)
 
+        
+        TILE_SIZE = 64  # 假設每張 tile 都是 64x64
+
+        def load_tile(name):
+            img = pygame.image.load(os.path.join(constants.TILE_PATH, name)).convert_alpha()
+            return pygame.transform.smoothscale(img, (TILE_SIZE, TILE_SIZE))
+
+        # base tiles
+        self.tile_images = {
+            "straight_h": load_tile("road_straight_full1.png"),
+            "straight_h2": load_tile("road_straight_full2.png"),
+            "straight_short": load_tile("road_straight_short.png"),
+            "curve": load_tile("corner_tl.png"),
+            "funnel": load_tile("road_funnel.png"),
+            "full": load_tile("road_full_tile.png"),
+            "diagonal": load_tile("road_curve_diagonal.png")
+        }
+
+        # rotated curve variants
+        self.tile_images.update({
+            "curve_0": self.tile_images["curve"],
+            "curve_90": pygame.transform.rotate(self.tile_images["curve"], -90),
+            "curve_180": pygame.transform.rotate(self.tile_images["curve"], 180),
+            "curve_270": pygame.transform.rotate(self.tile_images["curve"], 90),
+        })
+
+        # 將直線 tile 的垂直版本加入字典，並旋轉
+        self.tile_images.update({
+            "straight_v": pygame.transform.rotate(self.tile_images["straight_h"], 90),
+            "straight_v2": pygame.transform.rotate(self.tile_images["straight_h2"], 90),
+            "straight_short_v": pygame.transform.rotate(self.tile_images["straight_short"], 90),
+        })
+
     def spawn_projectile(self, tower_x, tower_y, enemy_x, enemy_y, tower):
         p = Projectile(tower_x, tower_y, enemy_x, enemy_y, tower)
         self.projectiles.append(p)
@@ -189,7 +222,7 @@ class GameplayScene:
     def draw(self, screen):
         self.draw_background(screen) # 畫背景
         self.draw_decorations(screen) # 畫裝飾物
-        self.draw_path(screen) # 畫路徑
+        self.draw_path_tile(screen) # 畫路徑
         self.draw_objects(screen) # 畫所有物件
         self.draw_ui(screen) # 畫 UI
         self.draw_interval_ui(screen) # 畫波次間隔條
@@ -211,7 +244,7 @@ class GameplayScene:
             b = int(top_color[2] * (1 - ratio) + bottom_color[2] * ratio)
             pygame.draw.line(screen, (r, g, b), (0, y), (constants.SCREEN_WIDTH, y))
     
-    def draw_path(self, screen):
+    def draw_path_tile(self, screen):
         if len(self.path_points) >= 2:
             # 陰影底線（深）
             pygame.draw.lines(screen, (40, 100, 40), False, self.path_points, 20)
@@ -376,3 +409,109 @@ class GameplayScene:
         self.placing_tower_class = tower_cls
         self.placing_tower_image = tower_cls.IMAGE
         self.preview_angle = 0
+
+    
+
+
+    def draw_path_tile(self, screen):
+
+        def expand_path_points(waypoints, step=64):
+            """ 將每對連續點之間插值成一段段固定距離的 path 點 """
+            expanded = []
+            for i in range(len(waypoints) - 1):
+                x1, y1 = waypoints[i]
+                x2, y2 = waypoints[i + 1]
+                dx, dy = x2 - x1, y2 - y1
+                dist = max(1, int((dx**2 + dy**2)**0.5))
+                steps = dist // step
+                for s in range(steps):
+                    t = s / steps
+                    x = int(x1 + dx * t)
+                    y = int(y1 + dy * t)
+                    expanded.append((x, y))
+            expanded.append(waypoints[-1])
+            return expanded
+
+
+        def get_tile_type(prev, curr, nxt, DEBUG=False):
+            """
+            prev, curr, nxt: 三個點座標 (x, y)
+            回傳值： "straight_h" / "straight_v" / "curve_0" / "curve_90" / "curve_180" / "curve_270"
+            其中 0° 圖示是左上角的彎 (左→上)。
+            """
+
+            # 1. 先計算向量
+            dx1, dy1 = curr[0] - prev[0], curr[1] - prev[1]
+            dx2, dy2 = nxt[0]  - curr[0], nxt[1]  - curr[1]
+
+            # 2. 正規化：只留下水平或垂直主方向
+            def norm(dx, dy):
+                if abs(dx) > abs(dy):
+                    return (1, 0) if dx > 0 else (-1, 0)
+                else:
+                    return (0, 1) if dy > 0 else (0, -1)
+
+            dir1, dir2 = norm(dx1, dy1), norm(dx2, dy2)
+
+            # 3. 先檢查直線
+            if dir1 == dir2:
+                tile = "straight_h" if dir1[0] != 0 else "straight_v"
+                if DEBUG: print(f"{dir1}->{dir2} → {tile}")
+                return tile
+
+            # 4. 曲線對映 (0°=左→上，依順時針分別是 0,90,180,270)
+            curve_mapping = {
+                # 0°: 左→上
+                ((-1, 0), (0, -1)): "curve_0",
+                ((0, -1), (-1, 0)): "curve_0",
+                # 90°: 上→右
+                ((0, -1), (1, 0)):  "curve_90",
+                ((1, 0), (0, -1)):  "curve_90",
+                # 180°: 右→下
+                ((1, 0), (0, 1)):   "curve_180",
+                ((0, 1), (1, 0)):   "curve_180",
+                # 270°: 下→左
+                ((0, 1), (-1, 0)):  "curve_270",
+                ((-1, 0), (0, 1)):  "curve_270",
+            }
+
+            tile = curve_mapping.get((dir1, dir2))
+            if DEBUG:
+                print(f"{dir1}->{dir2} →", tile if tile else "不在 mapping，fallback")
+
+            if tile:
+                return tile
+
+            # 5. 萬一都不符合：動態回傳直線方向
+            return "straight_h" if dir1[0] != 0 else "straight_v"
+
+        
+        def is_diagonal_segment(p1, p2):
+            dx = abs(p2[0] - p1[0])
+            dy = abs(p2[1] - p1[1])
+            return dx == dy and dx > 0  # 左上到右下
+        
+        pts = expand_path_points(self.path_points)
+        if len(pts) < 2:
+            return
+
+        extended = [pts[0]] + pts + [pts[-1]] # 延長路徑，讓兩端的 tile 也能畫出來
+
+        for i in range(1, len(extended) - 1):
+            prev_pt = extended[i - 1]
+            curr_pt = extended[i]
+            next_pt = extended[i + 1]
+
+            # 特例：最後一格是 funnel
+            if i == len(extended) - 2:
+                tile_img = self.tile_images["funnel"]
+            # 特例：某條為斜對角
+            elif is_diagonal_segment(prev_pt, curr_pt) or is_diagonal_segment(curr_pt, next_pt):
+                tile_img = self.tile_images["diagonal"]
+            else:
+                tile_type = get_tile_type(prev_pt, curr_pt, next_pt)
+                print(tile_type)
+                tile_img = self.tile_images[tile_type]
+            
+            rect = tile_img.get_rect(center=curr_pt)
+            screen.blit(tile_img, rect)
