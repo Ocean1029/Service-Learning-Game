@@ -1,5 +1,6 @@
 from .tower import Tower
 import pygame
+from projectiles.fireball import Fireball
 
 class Elephant(Tower):
     IMAGE = pygame.image.load("assets/images/tower/elephant.png")
@@ -10,5 +11,6 @@ class Elephant(Tower):
         super().__init__(x, y, range_radius=240, damage=1.45, attack_speed=1.0)
         # 先用正方形代替
         self.rect = self.IMAGE.get_rect(center=(x, y))
+        self.projectile_type = Fireball
 
     

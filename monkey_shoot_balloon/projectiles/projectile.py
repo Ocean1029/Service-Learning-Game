@@ -1,12 +1,9 @@
-import pygame
 import math
 import constants
-
 class Projectile:
-    IMAGE = pygame.Surface((7, 7))
-    IMAGE.fill((50,50,50))
+    IMAGE = None
 
-    def __init__(self, x, y, target_x, target_y, tower):
+    def __init__(self, x, y, target_x, target_y, tower, effect_manager, speed=800.0):
         """
         x, y:   專案物生成位置（猴子所在位置）
         target_x, target_y:  瞄準的敵人當下位置
@@ -15,16 +12,16 @@ class Projectile:
         """
         self.x = x
         self.y = y
-        self.speed = 600.0  # 飛行速度
+        self.speed = speed
         self.damage = tower.damage  # 傷害
         self.alive = True
+        self.trail = []  # projectile 初始化時加這行
+        self.effect_manager = effect_manager
 
         # 朝向目標的方向
         dx = target_x - x
         dy = target_y - y
-        dist = math.hypot(dx, dy)
-        if dist == 0:
-            dist = 1
+        dist = max(1, math.hypot(dx, dy))
         self.vx = dx / dist * self.speed
         self.vy = dy / dist * self.speed
 
@@ -33,15 +30,17 @@ class Projectile:
     def update(self, dt):
         if not self.alive:
             return
-        # 根據 vx, vy 移動
         self.x += self.vx * dt
         self.y += self.vy * dt
         self.rect.center = (int(self.x), int(self.y))
 
-        # 如果飛出螢幕，也可以將它標記為死亡（避免浪費記憶體）
         if (self.x < 0 or self.x > constants.SCREEN_WIDTH or
             self.y < 0 or self.y > constants.SCREEN_HEIGHT):
             self.alive = False
+
+        self.trail.append((self.x, self.y))
+        if len(self.trail) > 5:  # 最多保留 5 個點
+            self.trail.pop(0)
 
     def draw(self, screen):
         if self.alive:
@@ -49,3 +48,9 @@ class Projectile:
 
     def hit(self):
         self.alive = False
+
+    def calculate_angle(self, target_x, target_y):
+        dx = target_x - self.x
+        dy = target_y - self.y
+        angle = math.degrees(math.atan2(dy, dx))
+        return angle

@@ -3,6 +3,7 @@
 from enemies.tank_1 import Tank1
 from enemies.tank_2 import Tank2
 from enemies.tank_3 import Tank3
+from enemies.tank_4 import Tank4
 import constants
 
 class WaveManager:
@@ -21,7 +22,7 @@ class WaveManager:
             [[Tank2, 3], [Tank1, 5]],
             [[Tank1, 5], [Tank2, 5], [Tank1, 5], [Tank3, 1]],
             [[Tank3, 3], [Tank1, 5], [Tank2, 5], [Tank3, 2]],
-            []
+            [[Tank4, 1]]
         ]
 
         self.wave_interval     = 4.0    # 波與波的間隔秒數

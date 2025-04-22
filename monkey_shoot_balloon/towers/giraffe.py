@@ -1,5 +1,6 @@
 from .tower import Tower
 import pygame
+from projectiles.cannonball import Cannonball
 
 class Giraffe(Tower):
     IMAGE = pygame.image.load("assets/images/tower/giraffe.png")
@@ -10,3 +11,4 @@ class Giraffe(Tower):
         super().__init__(x, y, range_radius=80, damage=0.1, attack_speed=9.0)
         # 先用正方形代替
         self.rect = self.IMAGE.get_rect(center=(x, y))
+        self.projectile_type = Cannonball

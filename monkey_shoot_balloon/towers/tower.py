@@ -11,7 +11,7 @@ class Tower:
         self.range_radius = range_radius
         self.damage = damage
         self.attack_speed = attack_speed 
-
+        self.projectile_type = None
         self.cooldown = 0 
         self.rect = None
         self.target_enemy = None

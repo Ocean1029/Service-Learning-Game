@@ -5,6 +5,7 @@ import random
 
 from managers.wave_manager import WaveManager
 from managers.path_manager import PathManager
+from managers.effect_manager import EffectManager
 from decors.decor import Decor
 from UI.UI_button import UIButton
 from towers.elephant import Elephant
@@ -12,12 +13,15 @@ from towers.monkey import Monkey
 from towers.giraffe import Giraffe
 from utils.path import is_point_near_path
 from utils.image_scaler import blit_tiled_background
-from projectiles.projectile import Projectile
+from projectiles.fireball import Fireball
+from projectiles.cannonball import Cannonball
 
 
 class GameplayScene:
     def __init__(self, scene_manager):
         
+        tower_classes = [Elephant, Monkey, Giraffe]
+        Projectile_classes = [Fireball, Cannonball]
         
         self.money = constants.INITIAL_MONEY
         self.life = constants.INITIAL_LIVES
@@ -26,8 +30,8 @@ class GameplayScene:
         self.projectiles = []
     
         self.scene_manager = scene_manager
-        
         self.path_manager = PathManager()   
+        self.effect_manager = EffectManager()
         self.path_points = self.path_manager.get() # 取得路徑座標
         self.path_manager.reset()                    # 重置路徑，讓它可以隨機生成
 
@@ -55,7 +59,7 @@ class GameplayScene:
 
         self.tower_buttons = []
 
-        tower_classes = [Elephant, Monkey, Giraffe]
+        
         bar_width = 200
         bar_x = constants.SCREEN_WIDTH - bar_width
         start_y = 250          # 距離頂端的起始位置
@@ -109,7 +113,8 @@ class GameplayScene:
         })
 
     def spawn_projectile(self, tower_x, tower_y, enemy_x, enemy_y, tower):
-        p = Projectile(tower_x, tower_y, enemy_x, enemy_y, tower)
+        p = tower.projectile_type(
+            tower_x, tower_y, enemy_x, enemy_y, tower, self.effect_manager)
         self.projectiles.append(p)
     
     def handle_events(self, event):
@@ -196,6 +201,8 @@ class GameplayScene:
         # update wave manager
         self.wave_manager.update(dt, self.enemies)
 
+        # update effect manager
+        self.effect_manager.update(dt)
 
         # 如果正在放置塔，則讓塔圖片旋轉
         if self.placing_tower_class:
@@ -261,7 +268,8 @@ class GameplayScene:
             t.draw(screen)
         for p in self.projectiles:
             p.draw(screen)
-
+        self.effect_manager.draw(screen)
+        
     def draw_ui(self, screen):
 
         def draw_tower_sidebar(screen, tower_buttons, money, ui_font):
