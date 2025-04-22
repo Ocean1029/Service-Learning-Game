@@ -7,17 +7,14 @@ from managers.wave_manager import WaveManager
 from managers.path_manager import PathManager
 from managers.effect_manager import EffectManager
 from decors.decor import Decor
-from UI.UI_button import UIButton
 from towers.elephant import Elephant
 from towers.monkey import Monkey
 from towers.giraffe import Giraffe
 from towers.parrot import Parrot
-from towers.tower import Tower
 from utils.path import is_point_near_path
 from utils.image_scaler import blit_tiled_background
-from projectiles.fireball import Fireball
-from projectiles.cannonball import Cannonball
-
+from UI.tower_UI_button import TowerUIButton
+from UI.pause_button import PauseButton
 
 class GameplayScene:
     def __init__(self, scene_manager):
@@ -70,7 +67,7 @@ class GameplayScene:
 
         self.tower_buttons = []  # 清空舊的按鈕列表
         for i, tower_cls in enumerate(tower_classes):
-            btn = UIButton(
+            btn = TowerUIButton(
                 x=bar_x + 20,  # 留左右 padding
                 y=start_y + i * (btn_height + gap_y),
                 width=btn_width,
@@ -81,6 +78,8 @@ class GameplayScene:
             )
             self.tower_buttons.append(btn)
 
+        # 暫停按鈕
+        self.pause_button = PauseButton(x=50, y=50)
         
         def load_tile(name):
             img = pygame.image.load(os.path.join(constants.TILE_PATH, name)).convert_alpha()
@@ -120,9 +119,10 @@ class GameplayScene:
     
     def handle_events(self, event):
 
+        self.pause_button.handle_event(event)
         for btn in self.tower_buttons:
             btn.handle_event(event, self.money)
-
+        
         if event.type == pygame.KEYDOWN:
             # 洗掉放置塔的狀態
             self.placing_tower_class = None
@@ -130,7 +130,7 @@ class GameplayScene:
             self.preview_angle = 0
 
             if event.key == pygame.K_ESCAPE:
-                self.scene_manager.switch_scene("menu")
+                self.pause_button.toggle_pause()
             
             if event.key == pygame.K_1:
                 if self.money < Elephant.PRICE:
@@ -163,6 +163,7 @@ class GameplayScene:
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             # 左鍵點擊：真正放置塔
+            
             if self.placing_tower_class:
                 x, y = event.pos
                 
@@ -181,6 +182,11 @@ class GameplayScene:
                 self.placing_tower_class = None
                 self.placing_tower_image = None
                 self.preview_angle = 0
+
+        
+        if self.pause_button.is_paused():
+            self.scene_manager.switch_scene("menu")
+            self.pause_button.toggle_pause() # 切換回遊戲時，恢復遊戲狀態
 
     def update(self, dt):
         """ 每個 frame 進行遊戲狀態更新 """
@@ -310,6 +316,7 @@ class GameplayScene:
                 button_y_offset += 80  # 視 btn 大小調整
 
         draw_tower_sidebar(screen, self.tower_buttons, self.money, self.ui_font)
+        self.pause_button.draw(screen)
 
         icon_pos_x = constants.SCREEN_WIDTH - 160
         y_gap = 60

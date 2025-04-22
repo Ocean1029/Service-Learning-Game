@@ -10,7 +10,8 @@ class MenuScene:
 
     def handle_events(self, event):
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN:
+            # 按 Esc 或 Enter 進入遊戲
+            if event.key == pygame.K_RETURN or event.key == pygame.K_ESCAPE:
                 # 按 Enter 進入遊戲
                 self.scene_manager.switch_scene("gameplay")
 

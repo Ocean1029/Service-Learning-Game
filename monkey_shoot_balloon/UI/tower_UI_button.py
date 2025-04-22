@@ -2,7 +2,7 @@ import pygame
 import constants
 from utils.gray_scale import to_grayscale
 
-class UIButton:
+class TowerUIButton:
     def __init__(self, x, y, width, height, tower_cls, font, on_click):
         self.rect = pygame.Rect(x, y, width, height)
         self.tower_cls = tower_cls
