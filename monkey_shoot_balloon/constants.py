@@ -1,5 +1,4 @@
 import os
-import pygame
 
 # constants.py
 
@@ -26,7 +25,6 @@ UI_PATH = os.path.join("assets", "images", "UI")
 DECOR_PATH = os.path.join("assets", "images", "decor")
 PATH_END_IMAGE = os.path.join("assets", "images", "wood-cabin.png")
 
-
 # 路徑座標
 GRID_PATH = [
     [2,0],
@@ -51,8 +49,6 @@ GRID_PATH = [
 ]
 
 STATIC_PATH = [[col * 64, row * 64] for (col, row) in GRID_PATH]
-
-
 
 PATH_MODE = "static"   # "static" | "random"
 

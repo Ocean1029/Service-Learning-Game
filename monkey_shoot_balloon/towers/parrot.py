@@ -8,6 +8,6 @@ class Parrot(Tower):
     PRICE = 160
 
     def __init__(self, x, y):
-        super().__init__(x, y, range_radius=300, damage=0.5, attack_speed=4.0)
+        super().__init__(x, y, range_radius=300, damage=7.0, attack_speed=0.3)
         self.rect = self.IMAGE.get_rect(center=(x, y))
         self.projectile_type = Cannonball

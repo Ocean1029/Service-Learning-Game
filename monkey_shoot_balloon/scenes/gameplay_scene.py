@@ -1,27 +1,23 @@
 import os
 import pygame
 import constants
-import random
 
 from managers.wave_manager import WaveManager
 from managers.path_manager import PathManager
 from managers.effect_manager import EffectManager
-from systems.tower_placer import TowerPlacer
-from decors.decor import Decor
+from factories.ui_factory import UIFactory
+
 from towers.elephant import Elephant
 from towers.monkey import Monkey
 from towers.giraffe import Giraffe
 from towers.parrot import Parrot
-from utils.path import is_point_near_path
-from utils.image_scaler import blit_tiled_background
-from managers.UI_manager import UIManager
-from UI.tower_UI_button import TowerUIButton
-from UI.pause_button import PauseButton
 
+from utils.image_scaler import blit_tiled_background
+from systems.tower_placer import TowerPlacer
 class GameplayScene:
     def __init__(self, scene_manager):
         
-        tower_classes = [Elephant, Monkey, Giraffe, Parrot]
+        self.tower_classes = [Elephant, Monkey, Giraffe, Parrot]
         self.font = pygame.font.SysFont(None, 30)
         self.ui_font = pygame.font.Font(constants.UI_FONT, 40)
 
@@ -31,7 +27,7 @@ class GameplayScene:
         self.towers = []
         self.projectiles = []
 
-        self.tower_placer = TowerPlacer(tower_classes)
+        self.tower_placer = TowerPlacer(self.tower_classes)
         self.scene_manager = scene_manager
         self.path_manager = PathManager()   
         self.effect_manager = EffectManager()
@@ -40,56 +36,9 @@ class GameplayScene:
 
         self.wave_manager = WaveManager(self.path_manager) # 取得路徑物件
         self.wave_manager.start_wave(0)
-
-        self.icon_coin  = pygame.image.load(os.path.join(constants.UI_PATH, "coin.png")).convert_alpha()
-        self.icon_heart = pygame.image.load(os.path.join(constants.UI_PATH, "heart.png")).convert_alpha()
-        self.icon_wave  = pygame.image.load(os.path.join(constants.UI_PATH, "flag.png")).convert_alpha()
-        
-
-        size = (40, 40) # 圖示大小
-        self.icon_coin  = pygame.transform.smoothscale(self.icon_coin,  size)
-        self.icon_heart = pygame.transform.smoothscale(self.icon_heart, size)
-        self.icon_wave  = pygame.transform.smoothscale(self.icon_wave,  size) 
-        
-
-        bar_width = 200
-        bar_x = constants.SCREEN_WIDTH - bar_width
-        start_y = 250          # 距離頂端的起始位置
-        btn_width = bar_width - 40  # 留左右 padding
-        btn_height = 80
-        gap_y = 30
-        self.tower_buttons = []  # 清空舊的按鈕列表
-        for i, tower_cls in enumerate(tower_classes):
-            btn = TowerUIButton(
-                x=bar_x + 20,  # 留左右 padding
-                y=start_y + i * (btn_height + gap_y),
-                width=btn_width,
-                height=btn_height,
-                tower_cls=tower_cls,
-                font=self.ui_font,
-                on_click=self.tower_placer.select
-            )
-            self.tower_buttons.append(btn)
-
-        # 暫停按鈕
-        self.pause_button = PauseButton(x=50, y=50)
-
-        self.ui_manager = UIManager(
-            pause_button=self.pause_button,
-            tower_buttons=self.tower_buttons,
-            icon_coin=self.icon_coin,
-            icon_heart=self.icon_heart,
-            icon_wave=self.icon_wave,
-            ui_font=self.ui_font
-        )
-
-        self.placing_tower_class = None         # 正在放置的塔類別
-        self.placing_tower_image = None         # 其對應的圖片
-        self.preview_angle = 0                  # 旋轉動畫所需
-
-        self.decor_images = self.load_decor_images()
-        self.decorations = self.generate_decorations(0) 
-
+        self.ui_manager = UIFactory(
+            self.tower_classes, self.ui_font, self.tower_placer.select).create_ui_manager()
+        self.pause_button = self.ui_manager.pause_button
         def load_tile(name):
             img = pygame.image.load(os.path.join(constants.TILE_PATH, name)).convert_alpha()
             img = pygame.transform.smoothscale(img, (constants.TILE_SIZE, constants.TILE_SIZE))
@@ -141,7 +90,6 @@ class GameplayScene:
             # if event.key == pygame.K_n and not self.wave_manager.wave_in_progress and not self.wave_manager.all_waves_done:
             #     self.wave_manager.next_wave()
 
-        
         if self.pause_button.is_paused():
             self.scene_manager.switch_scene("menu")
             self.pause_button.toggle_pause() # 切換回遊戲時，恢復遊戲狀態
@@ -174,10 +122,6 @@ class GameplayScene:
 
         # update effect manager
         self.effect_manager.update(dt)
-
-        # 如果正在放置塔，則讓塔圖片旋轉
-        if self.placing_tower_class:
-            self.preview_angle += 90 * dt
 
         if self.life <= 0:
             self.scene_manager.switch_scene("lose")
@@ -216,7 +160,6 @@ class GameplayScene:
 
     def draw(self, screen):
         self.draw_background(screen) # 畫背景
-        self.draw_decorations(screen) # 畫裝飾物
         self.draw_path_tile(screen) # 畫路徑
         self.draw_objects(screen) # 畫所有物件
         self.draw_ui(screen) # 畫 UI
@@ -241,9 +184,6 @@ class GameplayScene:
             # 白中線
             pygame.draw.lines(screen, (255, 255, 255), False, self.path_points, 2)
 
-    def draw_decorations(self, screen):
-        for d in self.decorations:
-            d.draw(screen)
         
     def draw_objects(self, screen):
         for e in self.enemies:
@@ -296,46 +236,6 @@ class GameplayScene:
             cabin_image = pygame.transform.scale(cabin_image, (50, 50))
             cabin_rect = cabin_image.get_rect(center=self.path_points[-1])
             screen.blit(cabin_image, cabin_rect)
-
-
-    
-    def load_decor_images(self):
-        decor_imgs = []
-        for filename in os.listdir(constants.DECOR_PATH):
-            if filename.endswith(".png"):
-                img = pygame.image.load(os.path.join(constants.DECOR_PATH, filename)).convert_alpha()
-                img = pygame.transform.smoothscale(img, (40, 40))
-                decor_imgs.append(img)
-        return decor_imgs
-    
-    def generate_decorations(self, count):
-        decorations = []
-        tries = 0
-
-        while len(decorations) < count and tries < count * 5:
-            tries += 1
-            x = random.randint(40, constants.SCREEN_WIDTH - 40)
-            y = random.randint(40, constants.SCREEN_HEIGHT - 40)
-
-            # 避開路徑
-            if is_point_near_path(x, y, self.path_points, margin=constants.MARGIN):
-                continue
-            
-            # 避開右上角 UI 區域
-            if x > constants.SCREEN_WIDTH - 150 and y < 200:
-                continue
-
-            image = random.choice(self.decor_images)
-            image.set_alpha(128)
-            
-            decorations.append(Decor(image, x, y))
-        return decorations
-
-    def select_tower(self, tower_cls):
-        self.placing_tower_class = tower_cls
-        self.placing_tower_image = tower_cls.IMAGE
-        self.preview_angle = 0
-
     
     def draw_path_tile(self, screen):
         def expand_path_points(waypoints, step=64):
