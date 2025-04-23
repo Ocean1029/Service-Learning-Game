@@ -1,9 +1,9 @@
 import pygame
 from .projectile import Projectile
-from effects.cannonball_falsh import PiercerFlash
+from effects.piercer_falsh import PiercerFlash
 
-class Cannonball(Projectile):
-    IMAGE = pygame.image.load("assets/images/projectile/cannonball.png")
+class Piercer(Projectile):
+    IMAGE = pygame.image.load("assets/images/projectile/piercer.png")
     IMAGE = pygame.transform.scale(IMAGE, (10, 10))
 
     def __init__(self, x, y, target_x, target_y, tower, effect_manager):
@@ -13,7 +13,7 @@ class Cannonball(Projectile):
         speed:  飛行速度
         damage: 傷害
         """
-        super().__init__(x, y, target_x, target_y, tower, effect_manager, speed=800.0)
+        super().__init__(x, y, target_x, target_y, tower, effect_manager, speed=1200.0)
         self.rect = self.IMAGE.get_rect(center=(x, y))
         self.aoe_range = 0
     
