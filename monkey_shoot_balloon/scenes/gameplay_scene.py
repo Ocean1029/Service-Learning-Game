@@ -106,7 +106,7 @@ class GameplayScene:
         for e in self.enemies:
             e.update(dt)
             if e.reached_end:
-                self.life -= 1
+                self.life -= 1 ### 自己的生命值會加一？ ### 請把他改成會減一
         self.enemies = [e for e in self.enemies if e.alive]
 
         # update projectiles
