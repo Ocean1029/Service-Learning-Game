@@ -1,6 +1,6 @@
 import pygame
 from .projectile import Projectile
-from effects.cannonball_falsh import PiercerFlash
+from effects.cannonball_falsh import CannonballFlash
 
 class Cannonball(Projectile):
     IMAGE = pygame.image.load("assets/images/projectile/cannonball.png")
@@ -19,4 +19,4 @@ class Cannonball(Projectile):
     
     def hit(self):
         super().hit()
-        self.effect_manager.add(PiercerFlash(self.x, self.y))
+        self.effect_manager.add(CannonballFlash(self.x, self.y))
