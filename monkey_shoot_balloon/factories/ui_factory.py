@@ -3,15 +3,16 @@ import os
 import pygame
 import constants
 from UI.pause_button import PauseButton
+from UI.restart_button import RestartButton
 from UI.tower_UI_button import TowerUIButton
 from managers.UI_manager import UIManager
 
 class UIFactory:
-    def __init__(self, tower_classes, font, on_tower_select):
+    def __init__(self, tower_classes, on_tower_select):
         self.tower_classes = tower_classes
-        self.font = font
         self.on_tower_select = on_tower_select
-        self._pause_button = None  # 私有欄位，提供 getter 用
+        self._pause_button = None
+        self._restart_button = None
 
     def _load_scaled_icon(self, filename):
         icon = pygame.image.load(os.path.join(constants.UI_PATH, filename)).convert_alpha()
@@ -36,19 +37,19 @@ class UIFactory:
                 width=btn_width,
                 height=btn_height,
                 tower_cls=tower_cls,
-                font=self.font,
                 on_click=self.on_tower_select
             )
             for i, tower_cls in enumerate(self.tower_classes)
         ]
 
-        self._pause_button = PauseButton(x=50, y=50)
+        # self._pause_button = PauseButton(x=50, y=50)
+        self._restart_button = RestartButton(x=50, y=50)
 
         return UIManager(
             pause_button=self._pause_button,
+            restart_button=self._restart_button,
             tower_buttons=tower_buttons,
             icon_coin=icon_coin,
             icon_heart=icon_heart,
             icon_wave=icon_wave,
-            ui_font=self.font
         )

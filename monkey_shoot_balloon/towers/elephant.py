@@ -5,7 +5,7 @@ from projectiles.fireball import Fireball
 class Elephant(Tower):
     IMAGE = pygame.image.load("assets/images/tower/elephant.png")
     IMAGE = pygame.transform.scale(IMAGE, (40, 40))
-    PRICE = 200
+    PRICE = 250
     
     def __init__(self, x, y):
         super().__init__(x, y, range_radius=180, damage=1, attack_speed=1.0)

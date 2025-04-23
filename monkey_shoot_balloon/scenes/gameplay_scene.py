@@ -17,13 +17,12 @@ from systems.tower_placer import TowerPlacer
 class GameplayScene:
     def __init__(self, scene_manager):
         
-        self.tower_classes = [Elephant, Monkey, Giraffe, Parrot]
-        self.font = pygame.font.SysFont(None, 30)
-        self.ui_font = pygame.font.Font(constants.UI_FONT, 40)
+        self.is_paused = False
 
         self.money = constants.INITIAL_MONEY
         self.life = constants.INITIAL_LIVES
         self.enemies = []
+        self.tower_classes = [Elephant, Monkey, Giraffe, Parrot]
         self.towers = []
         self.projectiles = []
 
@@ -37,8 +36,9 @@ class GameplayScene:
         self.wave_manager = WaveManager(self.path_manager) # 取得路徑物件
         self.wave_manager.start_wave(0)
         self.ui_manager = UIFactory(
-            self.tower_classes, self.ui_font, self.tower_placer.select).create_ui_manager()
-        self.pause_button = self.ui_manager.pause_button
+            self.tower_classes, self.tower_placer.select).create_ui_manager()
+        
+
         def load_tile(name):
             img = pygame.image.load(os.path.join(constants.TILE_PATH, name)).convert_alpha()
             img = pygame.transform.smoothscale(img, (constants.TILE_SIZE, constants.TILE_SIZE))
@@ -69,6 +69,11 @@ class GameplayScene:
             "straight_v2": pygame.transform.rotate(self.tile_images["straight_h2"], 90),
             "straight_short_v": pygame.transform.rotate(self.tile_images["straight_short"], 90),
         })
+    
+
+    def toggle_pause(self):
+        self.is_paused = not self.is_paused
+        self.ui_manager.set_paused(self.is_paused)
 
     def spawn_projectile(self, tower_x, tower_y, enemy_x, enemy_y, tower):
         p = tower.projectile_type(
@@ -76,24 +81,26 @@ class GameplayScene:
         self.projectiles.append(p)
     
     def handle_events(self, event):
-        self.ui_manager.handle_event(event, self.money)
         
+        # 處理 UI 上面的事件，包含暫停按鈕與點擊塔的按鈕
+        result = self.ui_manager.handle_event(event, self.money)
+        if result == "pause_clicked":
+            self.toggle_pause() 
+        elif result == "restart_clicked":
+            self.scene_manager.reset_gameplay()  
+            self.scene_manager.switch_scene("menu")
+            self.scene_manager.switch_scene("gameplay")
+            
+            
+
+        # 處理放置塔的事件
         tower = self.tower_placer.handle_event(
             event, self.money, self.path_points, self.towers, self.ui_manager.get_ui_rects())
-        if tower:
+        if tower is not None:
             self.towers.append(tower)
             self.money -= tower.PRICE
 
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            self.pause_button.toggle_pause()
-            # # 按 N 且前一波敵人已經全部消失，就開始下一波
-            # if event.key == pygame.K_n and not self.wave_manager.wave_in_progress and not self.wave_manager.all_waves_done:
-            #     self.wave_manager.next_wave()
-
-        if self.pause_button.is_paused():
-            self.scene_manager.switch_scene("menu")
-            self.pause_button.toggle_pause() # 切換回遊戲時，恢復遊戲狀態
-
+        
     def update(self, dt):
         """ 每個 frame 進行遊戲狀態更新 """
 
@@ -155,8 +162,6 @@ class GameplayScene:
                                     if not target.alive:
                                         self.money += target.reward
                     break  # 碰撞後就不再檢查其他敵人
-                                
-                    
 
     def draw(self, screen):
         self.draw_background(screen) # 畫背景

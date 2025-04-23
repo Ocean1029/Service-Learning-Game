@@ -4,7 +4,7 @@ from effects.piercer_falsh import PiercerFlash
 
 class Piercer(Projectile):
     IMAGE = pygame.image.load("assets/images/projectile/piercer.png")
-    IMAGE = pygame.transform.scale(IMAGE, (10, 10))
+    IMAGE = pygame.transform.scale(IMAGE, (20, 20))
 
     def __init__(self, x, y, target_x, target_y, tower, effect_manager):
         """

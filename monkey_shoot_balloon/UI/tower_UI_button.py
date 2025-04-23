@@ -3,10 +3,10 @@ import constants
 from utils.gray_scale import to_grayscale
 
 class TowerUIButton:
-    def __init__(self, x, y, width, height, tower_cls, font, on_click):
+    def __init__(self, x, y, width, height, tower_cls, on_click):
         self.rect = pygame.Rect(x, y, width, height)
         self.tower_cls = tower_cls
-        self.font = font
+        self.font = pygame.font.Font(constants.UI_FONT, 30)
         self.on_click = on_click  # 回呼函式
         self.hovered = False
 

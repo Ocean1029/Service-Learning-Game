@@ -2,25 +2,36 @@ import pygame
 import constants
 
 class UIManager:
-    def __init__(self, pause_button, tower_buttons, icon_coin, icon_heart, icon_wave, ui_font):
+    def __init__(self, pause_button, restart_button, tower_buttons, icon_coin, icon_heart, icon_wave):
         self.pause_button = pause_button
+        self.restart_button = restart_button
         self.tower_buttons = tower_buttons
         self.icon_coin = icon_coin
         self.icon_heart = icon_heart
         self.icon_wave = icon_wave
-        self.ui_font = ui_font
+        self.ui_font = pygame.font.Font(constants.UI_FONT, 40)
 
     def handle_event(self, event, money):
-        self.pause_button.handle_event(event)
         for btn in self.tower_buttons:
             btn.handle_event(event, money)
+        
+        # if self.pause_button.handle_event(event):
+        #     return "pause_clicked"
+        if self.restart_button.handle_event(event):
+            return "restart_clicked"
+
+
+    def set_paused(self, paused):
+        self.pause_button.set_paused(paused)
 
     def is_paused(self):
         return self.pause_button.is_paused()
 
     def draw(self, screen, money, life, wave):
+        # self.pause_button.draw(screen)
+        self.restart_button.draw(screen)
+
         self.draw_tower_sidebar(screen, self.tower_buttons, money)
-        self.pause_button.draw(screen)
 
         icon_pos_x = constants.SCREEN_WIDTH - 160
         y_gap = 60
@@ -57,7 +68,9 @@ class UIManager:
 
     def get_ui_rects(self):
         # 獲取所有 UI 元件的矩形區域，並包含 sidebar 的矩形
-        ui_rects = [self.pause_button.rect]
+        ui_rects = []
+        # ui_rects.append(self.pause_button.rect)
+        ui_rects.append(self.restart_button.rect)
         ui_rects.extend(btn.rect for btn in self.tower_buttons)
         ui_rects.append(pygame.Rect(constants.SCREEN_WIDTH - 200, 0, 200, constants.SCREEN_HEIGHT))
         return ui_rects
