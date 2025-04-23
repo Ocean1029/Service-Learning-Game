@@ -22,3 +22,4 @@ class RestartButton:
             if self.rect.collidepoint(event.pos):
                 return True
         return False
+

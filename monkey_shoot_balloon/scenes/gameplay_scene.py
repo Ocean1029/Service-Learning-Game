@@ -86,13 +86,11 @@ class GameplayScene:
         result = self.ui_manager.handle_event(event, self.money)
         if result == "pause_clicked":
             self.toggle_pause() 
-        elif result == "restart_clicked":
-            self.scene_manager.reset_gameplay()  
-            self.scene_manager.switch_scene("menu")
-            self.scene_manager.switch_scene("gameplay")
+        elif result == "restart_clicked": 
+            self.scene_manager.reset_gameplay() 
+            self.scene_manager.switch_scene("menu") 
+            self.scene_manager.switch_scene("gameplay") 
             
-            
-
         # 處理放置塔的事件
         tower = self.tower_placer.handle_event(
             event, self.money, self.path_points, self.towers, self.ui_manager.get_ui_rects())

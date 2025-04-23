@@ -37,12 +37,23 @@ class TowerPlacer:
     def handle_event(self, event, money, path_points, towers, ui_rects):        
         if event.type == pygame.KEYDOWN:
             self.reset()
-            tower_cls = self.key_to_tower.get(event.key)
-            if tower_cls and money >= tower_cls.PRICE:
-                self.select(tower_cls)
+            
+            if event.key == pygame.K_1:
+                tower_class = Elephant
+            elif event.key == pygame.K_2:
+                tower_class = Monkey
+            elif event.key == pygame.K_3:
+                tower_class = Giraffe
+            elif event.key == pygame.K_4:
+                tower_class = Parrot
+            else:
+                tower_class = None
+            
+            if tower_class and money >= tower_class.PRICE:
+                self.select(tower_class)
         
-        if event.type == pygame.MOUSEBUTTONDOWN: # 左鍵點擊：真正放置塔
-            if self.selected_class:
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1: # 左鍵點擊
+            if self.selected_class is not None:
                 x, y = event.pos
                 if can_place_tower(x, y, self.selected_class, path_points, towers, ui_rects):
                     tower = self.selected_class(x, y)

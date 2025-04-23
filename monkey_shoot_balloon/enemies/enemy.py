@@ -56,3 +56,4 @@ class Enemy:
         self.health -= dmg
         if self.health <= 0:
             self.alive = False
+
