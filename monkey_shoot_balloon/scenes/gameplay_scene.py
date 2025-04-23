@@ -6,6 +6,7 @@ import random
 from managers.wave_manager import WaveManager
 from managers.path_manager import PathManager
 from managers.effect_manager import EffectManager
+from systems.tower_placer import TowerPlacer
 from decors.decor import Decor
 from towers.elephant import Elephant
 from towers.monkey import Monkey
@@ -13,6 +14,7 @@ from towers.giraffe import Giraffe
 from towers.parrot import Parrot
 from utils.path import is_point_near_path
 from utils.image_scaler import blit_tiled_background
+from managers.UI_manager import UIManager
 from UI.tower_UI_button import TowerUIButton
 from UI.pause_button import PauseButton
 
@@ -20,13 +22,16 @@ class GameplayScene:
     def __init__(self, scene_manager):
         
         tower_classes = [Elephant, Monkey, Giraffe, Parrot]
-        
+        self.font = pygame.font.SysFont(None, 30)
+        self.ui_font = pygame.font.Font(constants.UI_FONT, 40)
+
         self.money = constants.INITIAL_MONEY
         self.life = constants.INITIAL_LIVES
         self.enemies = []
         self.towers = []
         self.projectiles = []
-    
+
+        self.tower_placer = TowerPlacer(tower_classes)
         self.scene_manager = scene_manager
         self.path_manager = PathManager()   
         self.effect_manager = EffectManager()
@@ -36,35 +41,23 @@ class GameplayScene:
         self.wave_manager = WaveManager(self.path_manager) # 取得路徑物件
         self.wave_manager.start_wave(0)
 
-        self.placing_tower_class = None         # 正在放置的塔類別
-        self.placing_tower_image = None         # 其對應的圖片
-        self.preview_angle = 0                  # 旋轉動畫所需
-
         self.icon_coin  = pygame.image.load(os.path.join(constants.UI_PATH, "coin.png")).convert_alpha()
         self.icon_heart = pygame.image.load(os.path.join(constants.UI_PATH, "heart.png")).convert_alpha()
         self.icon_wave  = pygame.image.load(os.path.join(constants.UI_PATH, "flag.png")).convert_alpha()
+        
 
         size = (40, 40) # 圖示大小
         self.icon_coin  = pygame.transform.smoothscale(self.icon_coin,  size)
         self.icon_heart = pygame.transform.smoothscale(self.icon_heart, size)
-        self.icon_wave  = pygame.transform.smoothscale(self.icon_wave,  size)
-
-        self.font = pygame.font.SysFont(None, 30)
-        self.ui_font = pygame.font.Font(constants.UI_FONT, 40)
+        self.icon_wave  = pygame.transform.smoothscale(self.icon_wave,  size) 
         
-        self.decor_images = self.load_decor_images()
-        self.decorations = self.generate_decorations(0) 
 
-        self.tower_buttons = []
-
-        
         bar_width = 200
         bar_x = constants.SCREEN_WIDTH - bar_width
         start_y = 250          # 距離頂端的起始位置
         btn_width = bar_width - 40  # 留左右 padding
         btn_height = 80
         gap_y = 30
-
         self.tower_buttons = []  # 清空舊的按鈕列表
         for i, tower_cls in enumerate(tower_classes):
             btn = TowerUIButton(
@@ -74,13 +67,29 @@ class GameplayScene:
                 height=btn_height,
                 tower_cls=tower_cls,
                 font=self.ui_font,
-                on_click=self.select_tower
+                on_click=self.tower_placer.select
             )
             self.tower_buttons.append(btn)
 
         # 暫停按鈕
         self.pause_button = PauseButton(x=50, y=50)
-        
+
+        self.ui_manager = UIManager(
+            pause_button=self.pause_button,
+            tower_buttons=self.tower_buttons,
+            icon_coin=self.icon_coin,
+            icon_heart=self.icon_heart,
+            icon_wave=self.icon_wave,
+            ui_font=self.ui_font
+        )
+
+        self.placing_tower_class = None         # 正在放置的塔類別
+        self.placing_tower_image = None         # 其對應的圖片
+        self.preview_angle = 0                  # 旋轉動畫所需
+
+        self.decor_images = self.load_decor_images()
+        self.decorations = self.generate_decorations(0) 
+
         def load_tile(name):
             img = pygame.image.load(os.path.join(constants.TILE_PATH, name)).convert_alpha()
             img = pygame.transform.smoothscale(img, (constants.TILE_SIZE, constants.TILE_SIZE))
@@ -118,70 +127,19 @@ class GameplayScene:
         self.projectiles.append(p)
     
     def handle_events(self, event):
-
-        self.pause_button.handle_event(event)
-        for btn in self.tower_buttons:
-            btn.handle_event(event, self.money)
+        self.ui_manager.handle_event(event, self.money)
         
-        if event.type == pygame.KEYDOWN:
-            # 洗掉放置塔的狀態
-            self.placing_tower_class = None
-            self.placing_tower_image = None
-            self.preview_angle = 0
+        tower = self.tower_placer.handle_event(
+            event, self.money, self.path_points, self.towers, self.ui_manager.get_ui_rects())
+        if tower:
+            self.towers.append(tower)
+            self.money -= tower.PRICE
 
-            if event.key == pygame.K_ESCAPE:
-                self.pause_button.toggle_pause()
-            
-            if event.key == pygame.K_1:
-                if self.money < Elephant.PRICE:
-                    return
-                
-                self.placing_tower_class = Elephant
-                self.placing_tower_image = Elephant.IMAGE
-            
-            if event.key == pygame.K_2:
-                if self.money < Monkey.PRICE:
-                    return
-                self.placing_tower_class = Monkey
-                self.placing_tower_image = Monkey.IMAGE
-                
-            if event.key == pygame.K_3:
-                if self.money < Giraffe.PRICE:
-                    return
-                self.placing_tower_class = Giraffe
-                self.placing_tower_image = Giraffe.IMAGE
-
-            if event.key == pygame.K_4:
-                if self.money < Parrot.PRICE:
-                    return
-                self.placing_tower_class = Parrot
-                self.placing_tower_image = Parrot.IMAGE
-
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            self.pause_button.toggle_pause()
             # # 按 N 且前一波敵人已經全部消失，就開始下一波
             # if event.key == pygame.K_n and not self.wave_manager.wave_in_progress and not self.wave_manager.all_waves_done:
             #     self.wave_manager.next_wave()
-
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            # 左鍵點擊：真正放置塔
-            
-            if self.placing_tower_class:
-                x, y = event.pos
-                
-                for btn in self.tower_buttons:
-                    if btn.rect.collidepoint(event.pos):
-                        return  # ⛔ 點在 UI 上，不能放塔！
-
-                if not self.can_place_tower(x, y, self.placing_tower_class):
-                    return       
-                
-                # 放置塔
-                self.money -= self.placing_tower_class.PRICE
-                new_tower = self.placing_tower_class(x, y)
-                self.towers.append(new_tower)
-                
-                self.placing_tower_class = None
-                self.placing_tower_image = None
-                self.preview_angle = 0
 
         
         if self.pause_button.is_paused():
@@ -297,45 +255,7 @@ class GameplayScene:
         self.effect_manager.draw(screen)
 
     def draw_ui(self, screen):
-
-        def draw_tower_sidebar(screen, tower_buttons, money, ui_font):
-            bar_width = 200
-            bar_x = constants.SCREEN_WIDTH - bar_width
-
-            # 背景底色＋圓角＋陰影邊框
-            bar_rect = pygame.Rect(bar_x, 0, bar_width, constants.SCREEN_HEIGHT)
-            pygame.draw.rect(screen, (42, 55, 42), bar_rect, border_radius=0)  # 深綠底
-
-            # 側邊線（亮色或立體感）
-            pygame.draw.line(screen, (70, 100, 70), (bar_x, 0), (bar_x, constants.SCREEN_HEIGHT), 4)
-
-            # 繪製按鈕
-            button_y_offset = 80
-            for btn in tower_buttons:
-                btn.draw(screen, money)
-                button_y_offset += 80  # 視 btn 大小調整
-
-        draw_tower_sidebar(screen, self.tower_buttons, self.money, self.ui_font)
-        self.pause_button.draw(screen)
-
-        icon_pos_x = constants.SCREEN_WIDTH - 160
-        y_gap = 60
-
-        # 金幣
-        screen.blit(self.icon_coin, (icon_pos_x, 20))
-        money_txt = self.ui_font.render(str(self.money), True, constants.WHITE)
-        screen.blit(money_txt, (icon_pos_x + 60, 20))
-
-        # 生命
-        screen.blit(self.icon_heart, (icon_pos_x, 20 + y_gap))
-        life_txt = self.ui_font.render(str(self.life), True, constants.WHITE)
-        screen.blit(life_txt, (icon_pos_x + 60, 20 + y_gap))
-
-        # 波次
-        screen.blit(self.icon_wave, (icon_pos_x, 20 + 2 * y_gap))
-        wave_txt = self.ui_font.render(str(self.wave_manager.current_wave), True, constants.WHITE)
-        screen.blit(wave_txt, (icon_pos_x + 60, 20 + 2 * y_gap))
-
+        self.ui_manager.draw(screen, self.money, self.life, self.wave_manager.current_wave)
 
     def draw_interval_ui(self, screen):
         """波次間隔倒數條 + 文字"""
@@ -367,31 +287,7 @@ class GameplayScene:
             pygame.Rect(center_x - bar_w//2, base_y, bar_w, bar_h), 2, border_radius=6)
 
     def draw_placing_tower(self, screen):
-        if self.placing_tower_class: # 如果正在放置塔，class 不為 None 則繼續判斷
-            range_radius = self.placing_tower_class(0,0).range_radius
-            circle_color = (0, 180, 255, 80)  # 淡藍半透明
-
-            mx, my = pygame.mouse.get_pos()
-            rotated_image = pygame.transform.rotate(self.placing_tower_image, self.preview_angle)
-            # 旋轉 + 半透明
-
-            circle_surface = pygame.Surface(
-            (range_radius*2, range_radius*2), pygame.SRCALPHA)
-            pygame.draw.circle(
-                circle_surface, circle_color, (range_radius, range_radius), range_radius)
-            screen.blit(circle_surface, (mx - range_radius, my - range_radius))
-
-            if not self.can_place_tower(mx, my, self.placing_tower_class):
-                # 若近到不允許放置，就把透明度設為 20%
-                rotated_image.set_alpha(50)   # 50 / 255
-            
-            else:
-                # 否則預設為 50% 透明度
-                rotated_image.set_alpha(128)
-
-            # 將旋轉後的圖片置中在滑鼠座標
-            preview_rect = rotated_image.get_rect(center=(mx, my))
-            screen.blit(rotated_image, preview_rect)
+        self.tower_placer.draw_preview(screen, self.path_points, self.towers, self.ui_manager.get_ui_rects())
 
     def draw_path_end(self, screen):
         # 在路徑的尾端放上 wood cabin 圖片
@@ -401,22 +297,7 @@ class GameplayScene:
             cabin_rect = cabin_image.get_rect(center=self.path_points[-1])
             screen.blit(cabin_image, cabin_rect)
 
-    def can_place_tower(self, x, y, tower_cls):
-        """回傳 True 代表可放置"""
-        # 1) 路徑安全距
-        if is_point_near_path(x, y, self.path_points, constants.MARGIN):
-            return False
 
-        # 2) 與其它塔不重疊
-        tmp_rect = tower_cls.IMAGE.get_rect(center=(x, y))
-
-        # 讓碰撞判定稍微寬鬆，可把 rect 縮小 2~4 px 再檢查
-        tmp_rect_shrink = tmp_rect.inflate(-4, -4)
-
-        for t in self.towers:
-            if tmp_rect_shrink.colliderect(t.rect):
-                return False
-        return True
     
     def load_decor_images(self):
         decor_imgs = []

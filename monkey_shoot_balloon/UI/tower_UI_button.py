@@ -49,8 +49,6 @@ class TowerUIButton:
         screen.blit(price_text, text_pos)
 
 
-
-
     def handle_event(self, event, money):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if self.rect.collidepoint(event.pos) and money >= self.price:
