@@ -30,25 +30,44 @@ def convert_relative_imports(code, file_path):
     
     for line in lines:
         # Match relative imports
-        if re.match(r'^from\s+\.+', line) or re.match(r'^import\s+\.+', line):
-            # Count the number of dots
-            dots = len(re.match(r'\.+', line).group())
-            # Remove the dots
-            line_without_dots = re.sub(r'\.+', '', line, count=1)
-            
+        if re.match(r'^from\s+\.', line) or re.match(r'^import\s+\.', line):
+            # Extract the dots part
+            if 'from' in line:
+                parts = line.split('from ')[1].split(' import')
+                module_path = parts[0].strip()
+                rest = ' import' + parts[1] if len(parts) > 1 else ''
+            else:
+                parts = line.split('import ')[1].split(' as')
+                module_path = parts[0].strip()
+                rest = ' as' + parts[1] if len(parts) > 1 else ''
+                
+            # Count the dots
+            dots_count = 0
+            while module_path.startswith('.'):
+                dots_count += 1
+                module_path = module_path[1:]
+                
             # Calculate the absolute import path
             parts = rel_dir.split(os.sep)
-            if dots > len(parts):
+            if dots_count > len(parts):
                 # If trying to import from above root, keep original line
                 modified_lines.append(line)
                 continue
                 
             # Get the absolute import path
-            absolute_path = '.'.join(parts[:-dots+1] if dots > 1 else parts)
-            if 'from' in line:
-                modified_lines.append(f'from {absolute_path}{line_without_dots[4:]}')
+            absolute_path = '.'.join(parts[:-dots_count] if dots_count > 0 else parts)
+            
+            if absolute_path and module_path:
+                new_path = f"{absolute_path}.{module_path}"
+            elif absolute_path:
+                new_path = absolute_path
             else:
-                modified_lines.append(f'import {absolute_path}{line_without_dots[6:]}')
+                new_path = module_path
+                
+            if 'from' in line:
+                modified_lines.append(f'from {new_path}{rest}')
+            else:
+                modified_lines.append(f'import {new_path}{rest}')
         else:
             modified_lines.append(line)
     
